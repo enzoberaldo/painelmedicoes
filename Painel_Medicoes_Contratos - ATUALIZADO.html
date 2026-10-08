@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<!-- saved from url=(0071)file:///C:/Users/EnzoBeraldo/Downloads/Painel_Medicoes_Contratos_1.html -->
+<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Painel de Medições &amp; Contratos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg: #EEF0F3;
+    --paper: #FFFFFF;
+    --ink: #2B3138;
+    --ink-soft: #8B92A0;
+    --line: #ECEDF1;
+
+    --orange: #F2994A;
+    --orange-soft: #FDEEE0;
+    --green: #27AE60;
+    --green-soft: #E6F7ED;
+    --deepgreen: #1E5631;
+    --deepgreen-soft: #E1EAE3;
+    --blue: #2F80ED;
+    --blue-soft: #E8F0FE;
+    --red: #E0564A;
+    --red-soft: #FBE7E5;
+    --shadow: 0 4px 20px rgba(43,49,56,.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 22px 80px;}
+
+  .shell{
+    background:var(--paper);border-radius:24px;box-shadow:var(--shadow);
+    padding:18px 22px 26px;
+  }
+
+  header.top{
+    display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:14px;margin-bottom:18px;
+  }
+  .wordmark{font-family:'Manrope',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;color:var(--ink);}
+  .wordmark span{color:var(--orange);}
+  .updated-box{
+    font-size:11.5px;color:var(--ink-soft);text-align:right;line-height:1.5;
+  }
+  .updated-box b{color:var(--ink);font-weight:600;}
+
+  .tabs{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+  .tab-btn{
+    display:flex;align-items:center;gap:9px;
+    font-family:'Manrope',sans-serif;font-size:13.5px;font-weight:700;
+    padding:9px 18px 9px 9px;border:none;background:var(--bg);
+    cursor:pointer;color:var(--ink-soft);border-radius:30px;
+    transition:.15s;
+  }
+  .tab-btn .ic{
+    width:26px;height:26px;border-radius:50%;background:#fff;color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;
+    box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .tab-btn.active{background:var(--orange);color:#fff;}
+  .tab-btn.active .ic{background:#fff;color:var(--orange);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .section-head{display:flex;align-items:center;gap:12px;background:var(--orange);color:#fff;
+    border-radius:14px;padding:11px 18px;margin:26px 0 16px;}
+  .section-head .badge{
+    width:26px;height:26px;border-radius:50%;background:#fff;color:var(--orange);
+    display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;
+    font-weight:800;font-size:13px;flex:none;
+  }
+  .section-head h3{font-family:'Manrope',sans-serif;font-size:14px;letter-spacing:.03em;
+    text-transform:uppercase;margin:0;font-weight:700;}
+
+  .upload-bar{
+    display:flex;align-items:center;gap:14px;background:var(--bg);
+    border-radius:14px;padding:13px 18px;margin-bottom:6px;
+    flex-wrap:wrap;
+  }
+  .drop{
+    border:1.5px dashed var(--orange);border-radius:10px;padding:9px 16px;
+    font-size:12.5px;font-weight:600;color:var(--orange);
+    cursor:pointer;background:var(--orange-soft);transition:.15s;
+  }
+  .drop:hover{background:#fbdfc0;}
+  .drop.drag{background:#f8cfa0;}
+  input[type=file]{display:none;}
+  .meta{font-size:12px;color:var(--ink-soft);}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:18px 0 8px;}
+  .kpi{
+    background:var(--paper);border:1px solid var(--line);border-radius:16px;
+    padding:16px 18px;cursor:default;box-shadow:var(--shadow);
+  }
+  .kpi .tag{
+    display:inline-block;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:20px;
+    margin-bottom:10px;letter-spacing:.02em;
+  }
+  .kpi.c-green .tag{background:var(--green-soft);color:var(--green);}
+  .kpi.c-orange .tag{background:var(--orange-soft);color:var(--orange);}
+  .kpi.c-blue .tag{background:var(--blue-soft);color:var(--blue);}
+  .kpi.c-red .tag{background:var(--red-soft);color:var(--red);}
+  .kpi .num{font-family:'Manrope',sans-serif;font-size:27px;font-weight:800;line-height:1;margin-bottom:10px;}
+  .kpi .lbl{font-size:11.5px;color:var(--ink-soft);margin-bottom:10px;min-height:28px;}
+  .kpi-bar{height:6px;border-radius:6px;background:var(--bg);overflow:hidden;margin-bottom:6px;}
+  .kpi-fill{height:100%;border-radius:6px;width:0%;transition:width .4s;}
+  .kpi.c-green .kpi-fill{background:var(--green);}
+  .kpi.c-orange .kpi-fill{background:var(--orange);}
+  .kpi.c-blue .kpi-fill{background:var(--blue);}
+  .kpi.c-red .kpi-fill{background:var(--red);}
+  .kpi-pct{font-size:11px;color:var(--ink-soft);font-weight:600;}
+
+  .seg{display:inline-flex;background:var(--bg);border-radius:30px;padding:3px;margin-bottom:6px;}
+  .seg button{
+    font-size:12px;font-weight:700;padding:7px 16px;border:none;border-radius:30px;
+    background:transparent;cursor:pointer;color:var(--ink-soft);
+  }
+  .seg button.active{background:var(--paper);color:var(--ink);box-shadow:var(--shadow);}
+
+  .grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-bottom:8px;}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);}
+  .card h3.ch{
+    font-family:'Manrope',sans-serif;font-size:13px;margin:0 0 14px;
+    text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);font-weight:700;
+  }
+  .card-foot{font-size:11.5px;color:var(--ink-soft);margin-top:8px;}
+
+  .progress-wrap{height:30px;background:var(--bg);border-radius:30px;overflow:hidden;position:relative;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--orange));display:flex;align-items:center;justify-content:flex-end;padding-right:12px;border-radius:30px;}
+  .progress-fill span{font-family:'Manrope',sans-serif;color:#fff;font-weight:800;font-size:12.5px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{
+    text-align:left;font-size:10.5px;font-weight:700;
+    text-transform:uppercase;color:var(--ink-soft);border-bottom:1.5px solid var(--line);
+    padding:9px 8px;letter-spacing:.03em;
+  }
+  td{padding:9px 8px;border-bottom:1px solid var(--line);}
+  tbody tr:hover td{background:var(--bg);}
+  tbody tr:nth-child(even) td{background:#FAFBFC;}
+  tbody tr:nth-child(even):hover td{background:var(--bg);}
+
+  select, .fselect{
+    font-family:'Inter',sans-serif;padding:9px 14px;border:1.5px solid var(--line);
+    border-radius:30px;background:var(--paper);font-size:13px;min-width:260px;color:var(--ink);
+  }
+
+  .ruler{display:flex;gap:5px;margin-top:8px;}
+  .ruler .seg-block{flex:1;height:24px;border-radius:6px;background:var(--bg);position:relative;}
+  .ruler .seg-block.lit{background:var(--green);}
+  .ruler .seg-block.lit.last{background:var(--orange);}
+  .ruler-labels{display:flex;gap:5px;margin-top:6px;}
+  .ruler-labels span{flex:1;font-size:9.5px;text-align:center;color:var(--ink-soft);line-height:1.2;font-weight:600;}
+
+  .empty{padding:40px 10px;text-align:center;color:var(--ink-soft);font-size:13px;}
+  .empty b{display:block;font-family:'Manrope',sans-serif;font-size:16px;color:var(--ink);margin-bottom:6px;}
+
+  .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:700;}
+  .pill.novo{background:var(--orange-soft);color:var(--orange);}
+  .pill.aditivo{background:var(--blue-soft);color:var(--blue);}
+
+  .row-green td{background:var(--green-soft) !important;}
+  .row-red td{background:var(--red-soft) !important;}
+
+  .btn{
+    font-size:11.5px;font-weight:700;padding:7px 14px;border-radius:30px;
+    border:1.5px solid var(--ink);background:var(--paper);cursor:pointer;color:var(--ink);
+  }
+  .btn:hover{background:var(--ink);color:#fff;}
+  .legend{display:flex;gap:18px;font-size:11.5px;color:var(--ink-soft);margin:0 0 16px;font-weight:600;}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+  .note{font-size:11.5px;color:var(--blue);background:var(--blue-soft);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-weight:600;}
+
+  @media(max-width:880px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="shell">
+
+  <header class="top">
+    <div class="wordmark">INTEGRA<span>·</span>Painel</div>
+    <div class="updated-box">
+      <div>Medições: <b id="upd-medicoes">04/07/2026, 14:19:19</b></div>
+      <div>Contratos: <b id="upd-contratos">06/07/2026, 15:49:10</b></div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn" data-tab="medicoes"><span class="ic">M</span>Medições</button>
+    <button class="tab-btn active" data-tab="contratos"><span class="ic">C</span>Contratos a Cadastrar</button>
+    <button class="tab-btn" data-tab="caucoes"><span class="ic">§</span>Cauções</button>
+  </div>
+
+  <!-- ===================== MEDIÇÕES ===================== -->
+  <div class="tab-panel" id="panel-medicoes">
+
+    <div class="upload-bar">
+      <label class="drop" id="drop-medicoes">⬆ Carregar planilha de Medições (.xlsx)</label>
+      <input type="file" id="file-medicoes" accept=".xlsx,.xls">
+      <span class="meta" id="meta-medicoes">268 medições carregadas.</span>
+    </div>
+
+    <div id="medicoes-content" style="display: block;">
+
+      <div class="seg" id="seg-periodo">
+        <button data-v="todos" class="active">Todos</button>
+        <button data-v="atrasados">Atrasados</button>
+        <button data-v="mesatual">Mês atual</button>
+      </div>
+      <div class="seg" id="seg-resp" style="margin-left:10px;">
+        <button data-r="todos" class="active">Todos</button>
+        <button data-r="Enzo">Enzo</button>
+        <button data-r="Danilo">Danilo</button>
+        <button data-r="Arthur">Arthur</button>
+      </div>
+      <button class="btn" id="btn-limpar-filtros" style="margin-left:10px;margin-bottom:6px;">✕ Limpar filtros</button>
+
+      <div class="kpi-grid">
+        <div class="kpi c-green" id="kpi-recebidas">
+          <span class="tag">ESPELHOS</span>
+          <div class="num">9</div>
+          <div class="lbl">Recebidos no mês atual</div>
+          <div class="kpi-bar"><div class="kpi-fill" style="width: 100%;"></div></div>
+          <div class="kpi-pct">100%</div>
+        </div>
+        <div class="kpi c-orange" id="kpi-andamento">
+          <span class="tag">EM ANDAMENTO</span>
+          <div class="num">39</div>
+          <div class="lbl">Total geral</div>
+          <div class="kpi-bar"><div class="kpi-fill" style="width: 15%;"></div></div>
+          <div class="kpi-pct">15%</div>
+        </div>
+        <div class="kpi c-blue" id="kpi-andamento-mes">
+          <span class="tag">EM ANDAMENTO</span>
+          <div class="num">9</div>
+          <div class="lbl">Mês atual</div>
+          <div class="kpi-bar"><div class="kpi-fill" style="width: 23%;"></div></div>
+          <div class="kpi-pct">23%</div>
+        </div>
+        <div class="kpi c-red" id="kpi-atrasadas">
+          <span class="tag">ATRASO</span>
+          <div class="num">30</div>
+          <div class="lbl">Meses anteriores</div>
+          <div class="kpi-bar"><div class="kpi-fill" style="width: 77%;"></div></div>
+          <div class="kpi-pct">77%</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="ch">Medições em andamento, por fase atual</h3>
+          <canvas id="chart-pizza" height="520" style="display: block; box-sizing: border-box; height: 520px; width: 520px;" width="520"></canvas>
+          <p class="card-foot">Clique em uma fatia para filtrar a lista abaixo. Considera apenas medições com espelho já recebido.</p>
+        </div>
+        <div class="card">
+          <h3 class="ch">% de conclusão das medições do mês</h3>
+          <div class="progress-wrap"><div class="progress-fill" id="bar-conclusao" style="width: 71%;"><span id="bar-conclusao-label">71%</span></div></div>
+          <p class="card-foot" id="bar-conclusao-foot">96 concluídas de 135 em andamento (mês atual + atrasados).</p>
+          <h3 class="ch" style="margin-top:22px;">Avanço por fornecedor (mês atual)</h3>
+          <select class="fselect" id="select-fornecedor"><option value="">Selecione um fornecedor…</option><option value="ACCIAIO CONSTRUÇÕES METÁLICAS LTDA||2026-05">ACCIAIO CONSTRUÇÕES METÁLICAS LTDA</option><option value="ADVISOR GESTÃO EXECUTIVA E EDUCAÇÃO CORPORATIVA LTDA||2026-06">ADVISOR GESTÃO EXECUTIVA E EDUCAÇÃO CORPORATIVA LTDA</option><option value="AF CONSTRUÇÕES||2026-06">AF CONSTRUÇÕES</option><option value="AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA||2026-06">AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA (jun/26)</option><option value="AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA||2026-05">AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA (mai/26)</option><option value="AL 4 - AMBIENTAL E TERRAPLENAGEM LTDA||2026-05">AL 4 - AMBIENTAL E TERRAPLENAGEM LTDA (mai/26)</option><option value="ALUIZIO A.M. D&#39;AVILA ENGENHARIA DE PROJETOS S/S||2026-07">ALUIZIO A.M. D'AVILA ENGENHARIA DE PROJETOS S/S</option><option value="ALVO K||2026-07">ALVO K</option><option value="AUTODOC PROCESSAMENTO DE DADOS LTDA||2026-07">AUTODOC PROCESSAMENTO DE DADOS LTDA</option><option value="AVOX TELECOMUNICAÇÕES||2026-07">AVOX TELECOMUNICAÇÕES</option><option value="BOERIZ ENGENHARIA LTDA||2026-05">BOERIZ ENGENHARIA LTDA</option><option value="BRAIN TECNOLOGIA COMÉRCIO E SERVIÇOS LTDA||2026-06">BRAIN TECNOLOGIA COMÉRCIO E SERVIÇOS LTDA</option><option value="CAPM - TRANSPORTE LTDA||2026-07">CAPM - TRANSPORTE LTDA</option><option value="CEDRO ENGENHARIA, CONSULTORIA E COMERCIO LTDA||2026-06">CEDRO ENGENHARIA, CONSULTORIA E COMERCIO LTDA</option><option value="DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA (URBE)||2026-05">DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA (URBE)</option><option value="E.F.C. LOCACOES DE MÁQUINAS LTDA||2026-06">E.F.C. LOCACOES DE MÁQUINAS LTDA (jun/26)</option><option value="E.F.C. LOCACOES DE MÁQUINAS LTDA||2026-05">E.F.C. LOCACOES DE MÁQUINAS LTDA (mai/26)</option><option value="ESTATO - PRESENZA MARRONI AGRIMENSURA LTDA||2026-06">ESTATO - PRESENZA MARRONI AGRIMENSURA LTDA</option><option value="GABARRÃO CONSTRUÇÕES LTDA||2026-06">GABARRÃO CONSTRUÇÕES LTDA</option><option value="IDEAL LOCACOES E MONTAGENS DE EQUIPAMENTOS LTDA||2026-06">IDEAL LOCACOES E MONTAGENS DE EQUIPAMENTOS LTDA</option><option value="JS PISO||2026-06">JS PISO</option><option value="LEAO LOCACOES TRANSPORTES E COMERCIO LTDA||2026-06">LEAO LOCACOES TRANSPORTES E COMERCIO LTDA (jun/26)</option><option value="LEAO LOCACOES TRANSPORTES E COMERCIO LTDA||2026-05">LEAO LOCACOES TRANSPORTES E COMERCIO LTDA (mai/26)</option><option value="LEONARDI CONSTRUÇÃO INDUSTRIALIZADA LTDA||2026-06">LEONARDI CONSTRUÇÃO INDUSTRIALIZADA LTDA (jun/26)</option><option value="LEONARDI CONSTRUÇÃO INDUSTRIALIZADA LTDA||2026-05">LEONARDI CONSTRUÇÃO INDUSTRIALIZADA LTDA (mai/26)</option><option value="ON EMPREITEIRA DA CONSTRUCAO CIVIL LTDA||2026-04">ON EMPREITEIRA DA CONSTRUCAO CIVIL LTDA</option><option value="PLANEM ENGENHARIA E ELETRICIDADE LTDA||2026-06">PLANEM ENGENHARIA E ELETRICIDADE LTDA (jun/26)</option><option value="RGP ENGENHARIA DE SEGURANCA E MEDICINA OCUPACIONAL LTDA||2026-07">RGP ENGENHARIA DE SEGURANCA E MEDICINA OCUPACIONAL LTDA</option><option value="RVS LOCACAO DE CACAMBAS LTDA||2026-05">RVS LOCACAO DE CACAMBAS LTDA</option><option value="SENTINELA TECNOLOGIA E SEGURANÇA LTDA||2026-07">SENTINELA TECNOLOGIA E SEGURANÇA LTDA</option><option value="SH FORMAS ||2026-07">SH FORMAS </option><option value="SIN COMUNICACAO EMPRESARIAL EIRELI (PRESOTI COMUNICAÇÃO)||2026-07">SIN COMUNICACAO EMPRESARIAL EIRELI (PRESOTI COMUNICAÇÃO)</option><option value="TMB COMERCIO E SERVICOS LTDA||2026-06">TMB COMERCIO E SERVICOS LTDA</option><option value="ZAP TRANSPORTE E REMOCAO DE ENTULHO LTDA||2026-06">ZAP TRANSPORTE E REMOCAO DE ENTULHO LTDA</option></select>
+          <div id="fornecedor-ruler"></div>
+        </div>
+      </div>
+
+      <div class="section-head"><span class="badge">1</span><h3>Lista de medições <span id="lista-filtro-label"></span></h3></div>
+      <div class="card">
+        <table id="tabela-medicoes">
+          <thead><tr><th>Fornecedor</th><th>Mês</th><th>Setor</th><th>Contrato</th><th>Fase atual</th><th>Status</th></tr></thead>
+          <tbody><tr><td>CEDRO ENGENHARIA, CONSULTORIA E COMERCIO LTDA</td><td>jun/26</td><td>ENGENHARIA</td><td>OS_INT2_0036_2025</td><td>Recebimento NF</td><td></td></tr><tr><td>DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA (URBE)</td><td>mai/26</td><td>SUBCONTRATOS</td><td>OS_INT2_0062_2026</td><td>Aprovação da Obra</td><td></td></tr><tr><td>LEONARDI CONSTRUÇÃO INDUSTRIALIZADA LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0006_2025</td><td>Recebimento NF</td><td>EM ELABORAÇÃO</td></tr><tr><td>AL 4 - AMBIENTAL E TERRAPLENAGEM LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0016_2025</td><td>Aprovação UAU</td><td>EM ELABORAÇÃO</td></tr><tr><td>AL 4 - AMBIENTAL E TERRAPLENAGEM LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0016_2025</td><td>Aprovação UAU</td><td>EM ELABORAÇÃO</td></tr><tr><td>AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0032_2025</td><td>Aprovação UAU</td><td></td></tr><tr><td>AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0032_2025</td><td>Aprovação UAU</td><td></td></tr><tr><td>E.F.C. LOCACOES DE MÁQUINAS LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0033_2025</td><td>Envio ao Financeiro</td><td>EM ELABORAÇÃO</td></tr><tr><td>ON EMPREITEIRA DA CONSTRUCAO CIVIL LTDA</td><td>abr/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0039_2025</td><td>Aprovação UAU</td><td>ATRASADO</td></tr><tr><td>RVS LOCACAO DE CACAMBAS LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0046_2025</td><td>Envio ao Financeiro</td><td></td></tr><tr><td>LEAO LOCACOES TRANSPORTES E COMERCIO LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0047_2025</td><td>Recebimento NF</td><td></td></tr><tr><td>ACCIAIO CONSTRUÇÕES METÁLICAS LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0070_2026</td><td>Aprovação UAU</td><td></td></tr><tr><td>BOERIZ ENGENHARIA LTDA</td><td>mai/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0088_2026</td><td>Aprovação UAU</td><td></td></tr><tr><td>BRAIN TECNOLOGIA COMÉRCIO E SERVIÇOS LTDA</td><td>jun/26</td><td>ADMINISTRATIVO</td><td>SUB_INT2_0020_2025</td><td>Envio ao Financeiro</td><td></td></tr><tr><td>ESTATO - PRESENZA MARRONI AGRIMENSURA LTDA</td><td>jun/26</td><td>ADMINISTRATIVO</td><td>SUB_INT2_0021_2025</td><td>Recebimento NF</td><td></td></tr><tr><td>LEONARDI CONSTRUÇÃO INDUSTRIALIZADA LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0006_2025</td><td>Aprovação UAU</td><td></td></tr><tr><td>TMB COMERCIO E SERVICOS LTDA</td><td>jun/26</td><td>ADMINISTRATIVO</td><td>SUB_INT2_0022_2025</td><td>Envio ao Financeiro</td><td></td></tr><tr><td>AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0032_2025</td><td>Aprovação UAU</td><td></td></tr><tr><td>AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0032_2025</td><td>Aprovação UAU</td><td></td></tr><tr><td>E.F.C. LOCACOES DE MÁQUINAS LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0033_2025</td><td>Aprovação UAU</td><td></td></tr><tr><td>LEAO LOCACOES TRANSPORTES E COMERCIO LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0047_2025</td><td>Aprovação UAU</td><td></td></tr><tr><td>PLANEM ENGENHARIA E ELETRICIDADE LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0064_2025</td><td>Aprovação da Obra</td><td></td></tr><tr><td>JS PISO</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0087_2026</td><td>Aprovação UAU</td><td></td></tr><tr><td>PLANEM ENGENHARIA E ELETRICIDADE LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0064_2025</td><td>Aprovação da Obra</td><td></td></tr><tr><td>PLANEM ENGENHARIA E ELETRICIDADE LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0064_2025</td><td>Aprovação da Obra</td><td></td></tr><tr><td>IDEAL LOCACOES E MONTAGENS DE EQUIPAMENTOS LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>OS_INT2_0065_2026</td><td>Aprovação UAU</td><td></td></tr><tr><td>AVOX TELECOMUNICAÇÕES</td><td>jul/26</td><td>ADMINISTRATIVO</td><td>SUB_INT2_0019_2025</td><td>Envio ao Financeiro</td><td></td></tr><tr><td>AUTODOC PROCESSAMENTO DE DADOS LTDA</td><td>jul/26</td><td>ENGENHARIA</td><td>SUB_INT2_0026_2025</td><td>Envio ao Financeiro</td><td></td></tr><tr><td>AF CONSTRUÇÕES</td><td>jun/26</td><td>ENGENHARIA</td><td>SUB_INT2_0108_2025</td><td>Envio à Obra</td><td></td></tr><tr><td>SIN COMUNICACAO EMPRESARIAL EIRELI (PRESOTI COMUNICAÇÃO)</td><td>jul/26</td><td>SUBCONTRATOS</td><td>OS_INT2_0055_2026</td><td>Envio ao Financeiro</td><td></td></tr><tr><td>CAPM - TRANSPORTE LTDA</td><td>jul/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0034_2025</td><td>Aprovação da Obra</td><td></td></tr><tr><td>ADVISOR GESTÃO EXECUTIVA E EDUCAÇÃO CORPORATIVA LTDA</td><td>jun/26</td><td>ENGENHARIA</td><td>SUB_INT2_0103_2026</td><td>Envio ao Financeiro</td><td></td></tr><tr><td>GABARRÃO CONSTRUÇÕES LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0094_2025</td><td>Aprovação da Obra</td><td></td></tr><tr><td>RGP ENGENHARIA DE SEGURANCA E MEDICINA OCUPACIONAL LTDA</td><td>jul/26</td><td>QSMS</td><td>SUB_INT2_0023_2025</td><td>Aprovação da Obra</td><td></td></tr><tr><td>SH FORMAS </td><td>jul/26</td><td>SUBCONTRATOS</td><td>OS_INT2_0073_2026</td><td>Aprovação da Obra</td><td></td></tr><tr><td>ALVO K</td><td>jul/26</td><td>SUBCONTRATOS</td><td>OS_INT2_0073_2026</td><td>Aprovação da Obra</td><td></td></tr><tr><td>SENTINELA TECNOLOGIA E SEGURANÇA LTDA</td><td>jul/26</td><td>ADMINISTRATIVO</td><td>SUB_INT2_0038_2025</td><td>Aprovação UAU</td><td></td></tr><tr><td>ALUIZIO A.M. D'AVILA ENGENHARIA DE PROJETOS S/S</td><td>jul/26</td><td>ENGENHARIA</td><td>SUB_INT2_0003_2025</td><td>Aprovação da Obra</td><td></td></tr><tr><td>ZAP TRANSPORTE E REMOCAO DE ENTULHO LTDA</td><td>jun/26</td><td>SUBCONTRATOS</td><td>SUB_INT2_0040_2025</td><td>Aprovação UAU</td><td></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="empty" id="medicoes-empty" style="display: none;">
+      <b>Nenhum dado carregado ainda</b>
+      Carregue o arquivo de Gestão de Medições (.xlsx) para ver o painel.
+    </div>
+  </div>
+
+  <!-- ===================== CONTRATOS ===================== -->
+  <div class="tab-panel active" id="panel-contratos">
+
+    <div class="upload-bar">
+      <label class="drop" id="drop-contratos">⬆ Carregar planilha(s) de Contratos — Lote 1 e/ou Lote 2 (.xlsx)</label>
+      <input type="file" id="file-contratos" accept=".xlsx,.xls" multiple="">
+      <span class="meta" id="meta-contratos">195 contratos lidos de 1 arquivo(s).</span>
+    </div>
+
+    <div class="note">Contratos e aditivos a serem cadastrados presentes em mais de uma obra serão agrupados em apenas uma linha.</div>
+
+    <div class="legend">
+      <span><i style="background:var(--green-soft);border:1px solid var(--green);"></i>Cadastrado nos últimos 7 dias</span>
+      <span><i style="background:var(--red-soft);border:1px solid var(--red);"></i>Pendente há mais de 7 dias (atrasado)</span>
+      <span><i style="background:var(--paper);border:1px solid var(--line);"></i>Entrou esta semana</span>
+    </div>
+
+    <div class="section-head"><span class="badge">2</span><h3>Contratos / Aditivos a cadastrar</h3></div>
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+        <div class="seg" id="seg-contratos">
+          <button data-s="todos" class="">Todos</button>
+          <button data-s="pendente" class="active">À Cadastrar</button>
+          <button data-s="feito" class="">Cadastrados</button>
+        </div>
+      </div>
+      <input type="text" id="busca-contratos" placeholder="🔍 Buscar por código, fornecedor ou item..." class="fselect" style="width:100%;margin-bottom:16px;">
+      <table id="tabela-contratos">
+        <thead><tr><th>Item</th><th>Tipo</th><th>Código</th><th>Fornecedor</th><th>Detectado em</th><th></th></tr></thead>
+        <tbody><tr class=""><td>TAC 01 - OS_INT2_0063_2026 - RM REVESTIMENTOS</td><td><span class="pill aditivo">Aditivo</span></td><td>OS_INT2_0063_2026</td><td>RM REVESTIMENTOS</td><td>06/07/2026</td><td><button class="btn" data-id="tac1__OS_INT2_0063_2026" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class=""><td>TAC 01 - SUB_INT2_0090_2026 - B&amp;R</td><td><span class="pill aditivo">Aditivo</span></td><td>SUB_INT2_0090_2026</td><td>B&amp;R</td><td>06/07/2026</td><td><button class="btn" data-id="tac1__SUB_INT2_0090_2026" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class=""><td>OS_INT2_0079_2026 — SH ALVENARIA</td><td><span class="pill novo">Novo contrato</span></td><td>OS_INT2_0079_2026</td><td>SH ALVENARIA</td><td>02/07/2026</td><td><button class="btn" data-id="novo__OS_INT2_0079_2026" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class=""><td>OS_INT2_0080_2026 — SH ALVENARIA</td><td><span class="pill novo">Novo contrato</span></td><td>OS_INT2_0080_2026</td><td>SH ALVENARIA</td><td>02/07/2026</td><td><button class="btn" data-id="novo__OS_INT2_0080_2026" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class=""><td>OS_INT2_0081_2026 — SH ALVENARIA</td><td><span class="pill novo">Novo contrato</span></td><td>OS_INT2_0081_2026</td><td>SH ALVENARIA</td><td>02/07/2026</td><td><button class="btn" data-id="novo__OS_INT2_0081_2026" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class=""><td>TAC 04 - SUB_INT2_0015_2025 - PTA</td><td><span class="pill aditivo">Aditivo</span></td><td>SUB_INT2_0015_2025</td><td>PTA</td><td>01/07/2026</td><td><button class="btn" data-id="tac4__SUB_INT2_0015_2025" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class=""><td>TAC 04 - SUB_INT2_0016_2025 - ALANO</td><td><span class="pill aditivo">Aditivo</span></td><td>SUB_INT2_0016_2025</td><td>ALANO</td><td>01/07/2026</td><td><button class="btn" data-id="tac4__SUB_INT2_0016_2025" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class=""><td>TAC 02 - SUB_INT2_0032_2025 - AGILIS</td><td><span class="pill aditivo">Aditivo</span></td><td>SUB_INT2_0032_2025</td><td>AGILIS</td><td>01/07/2026</td><td><button class="btn" data-id="tac2__SUB_INT2_0032_2025" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class=""><td>TAC 03 - SUB_INT2_0049_2025 - SPGEO</td><td><span class="pill aditivo">Aditivo</span></td><td>SUB_INT2_0049_2025</td><td>SPGEO</td><td>01/07/2026</td><td><button class="btn" data-id="tac3__SUB_INT2_0049_2025" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class="row-red"><td>SUB_INT2_0005_2025 — LEONARDI</td><td><span class="pill novo">Novo contrato</span></td><td>SUB_INT2_0005_2025</td><td>LEONARDI</td><td>22/06/2026</td><td><button class="btn" data-id="novo__SUB_INT2_0005_2025" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class="row-red"><td>TAC 01 - SUB_INT2_0078_2026 - VIBES</td><td><span class="pill aditivo">Aditivo</span></td><td>SUB_INT2_0078_2026</td><td>VIBES</td><td>22/06/2026</td><td><button class="btn" data-id="tac1__SUB_INT2_0078_2026" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class="row-red"><td>SUB_INT2_0109_2026 — CONCREBASE</td><td><span class="pill novo">Novo contrato</span></td><td>SUB_INT2_0109_2026</td><td>CONCREBASE</td><td>22/06/2026</td><td><button class="btn" data-id="novo__SUB_INT2_0109_2026" data-toggle="true">✓ Marcar cadastrado</button></td></tr><tr class="row-red"><td>SUB_INT2_0110_2026 — CONCREBASE</td><td><span class="pill novo">Novo contrato</span></td><td>SUB_INT2_0110_2026</td><td>CONCREBASE</td><td>22/06/2026</td><td><button class="btn" data-id="novo__SUB_INT2_0110_2026" data-toggle="true">✓ Marcar cadastrado</button></td></tr></tbody>
+      </table>
+      <div class="empty" id="contratos-empty" style="display: none;">
+        <b>Nenhum dado carregado ainda</b>
+        Carregue as planilhas de contratos para gerar a lista.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CAUÇÕES ===================== -->
+  <div class="tab-panel" id="panel-caucoes">
+
+    <div class="upload-bar">
+      <label class="drop" id="drop-caucoes">⬆ Carregar planilha de Contratos Lote 1 (.xlsx)</label>
+      <input type="file" id="file-caucoes" accept=".xlsx,.xls">
+      <span class="meta" id="meta-caucoes">548 contratos carregados.</span>
+    </div>
+
+    <div id="caucoes-content" style="display: block;">
+
+      <div class="section-head"><span class="badge">1</span><h3>Total Caução Realizado vs Total Valor Retido</h3></div>
+      <div class="card" style="margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span id="cau-bar-label-real" style="font-family:&#39;Manrope&#39;,sans-serif;font-weight:700;font-size:13px;color:var(--green);">Realizado: R$&nbsp;284.750,52</span>
+          <span id="cau-bar-label-total" style="font-family:&#39;Manrope&#39;,sans-serif;font-size:12px;color:var(--ink-soft);">Total Retido: R$&nbsp;2.361.716,85</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-fill" id="cau-bar-fill" style="width: 12%; background: linear-gradient(90deg,var(--green),var(--blue));">
+            <span id="cau-bar-pct">12%</span>
+          </div>
+        </div>
+        <p class="card-foot" id="cau-bar-foot">Saldo pendente: R$&nbsp;2.076.966,34</p>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:18px;">
+        <div class="card">
+          <h3 class="ch">Contratos por Situação</h3>
+          <canvas id="chart-caucoes-pizza" height="520" style="display: block; box-sizing: border-box; height: 520px; width: 520px;" width="520"></canvas>
+        </div>
+        <div class="card">
+          <h3 class="ch">Valor Retido ao longo do tempo</h3>
+          <canvas id="chart-caucoes-linha" height="359" style="display: block; box-sizing: border-box; height: 359px; width: 469px;" width="469"></canvas>
+          <p class="card-foot">Passe o mouse sobre os pontos para ver Valor Retido, Devolvido e Saldo.</p>
+        </div>
+      </div>
+
+      <div class="section-head"><span class="badge">2</span><h3>Próximos Cauções</h3></div>
+      <div class="card" style="margin-bottom:18px;">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+          <div class="seg" id="seg-caucoes">
+            <button data-c="todos" class="active">Todos</button>
+            <button data-c="apagar">À Pagar</button>
+            <button data-c="pagas">Pagas</button>
+            <button data-c="atrasadas">Atrasadas</button>
+          </div>
+          <input type="text" id="busca-caucoes" placeholder="🔍 Buscar contrato ou fornecedor..." class="fselect" style="min-width:220px;flex:1;">
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--green-soft);border:1px solid var(--green);"></i>Paga (Data Realizada preenchida)</span>
+          <span><i style="background:var(--red-soft);border:1px solid var(--red);"></i>Atrasada (prevista no passado, sem realização)</span>
+          <span><i style="background:var(--paper);border:1px solid var(--line);"></i>À Pagar</span>
+        </div>
+        <table id="tabela-caucoes">
+          <thead><tr><th>Data Caução</th><th>Contratado</th><th>Código</th><th>Valor Retido</th><th>Valor Devolvido</th><th>Saldo Caução</th></tr></thead>
+          <tbody><tr class="row-red"><td>29/04/2024</td><td>FORTEPISO PRESTACAO DE SERVICOS LTDA</td><td>SUB_INT_0104_2024</td><td>R$&nbsp;4.748,12</td><td>R$&nbsp;0,00</td><td>R$&nbsp;4.748,12</td></tr><tr class="row-red"><td>13/08/2024</td><td>APP PRE MOLDADOS S/A</td><td>SUB_INT_0038_2023</td><td>R$&nbsp;287.829,25</td><td>R$&nbsp;100.000,00</td><td>R$&nbsp;187.829,25</td></tr><tr class="row-red"><td>04/03/2025</td><td>CONEXAO MONTAGENS TECNICAS LTDA</td><td>SUB_INT_0103_2024</td><td>R$&nbsp;27.514,89</td><td>R$&nbsp;0,00</td><td>R$&nbsp;27.514,89</td></tr><tr class="row-red"><td>15/07/2025</td><td>FERCAP ESQUADRIAS METALICAS INDUSTRIA E COMERCIO LTDA</td><td>SUB_INT_0102_2024</td><td>R$&nbsp;31.039,11</td><td>R$&nbsp;0,00</td><td>R$&nbsp;31.039,11</td></tr><tr class="row-red"><td>22/09/2025</td><td>L.A. FALCAO BAUER CENTRO TECNOLOGICO DE CONTROLE DA QUALIDADE LTDA</td><td>SUB_INT_0154_2024</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td></tr><tr class="row-red"><td>16/10/2025</td><td>PERSIPISOS - DECORACOES LTDA</td><td>SUB_INT_0191_2024</td><td>R$&nbsp;742,32</td><td>R$&nbsp;0,00</td><td>R$&nbsp;742,32</td></tr><tr class="row-red"><td>03/11/2025</td><td>MAYA ENGENHARIA E CONSTRUCOES LTDA</td><td>SUB_INT_0227_2025</td><td>R$&nbsp;4.484,92</td><td>R$&nbsp;0,00</td><td>R$&nbsp;4.484,92</td></tr><tr class="row-red"><td>07/11/2025</td><td>ALAN TORRES FERREIRA DE OLIVEIRA</td><td>SUB_INT_0016_2023</td><td>R$&nbsp;2.678,70</td><td>R$&nbsp;2.678,70</td><td>R$&nbsp;0,00</td></tr><tr class="row-red"><td>18/11/2025</td><td>OLIVERBRISE COMERCIO E SERVICOS LTDA</td><td>SUB_INT_0163_2024</td><td>R$&nbsp;3.491,40</td><td>R$&nbsp;0,00</td><td>R$&nbsp;3.491,40</td></tr><tr class="row-red"><td>18/12/2025</td><td>JG VIEIRA AR CONDICIONADO, REFRIGERACAO E MANUTENCAO LTDA</td><td>SUB_INT_0133_2024</td><td>R$&nbsp;63.496,42</td><td>R$&nbsp;0,00</td><td>R$&nbsp;63.496,42</td></tr><tr class="row-red"><td>23/01/2026</td><td>AA SPINDOLA DIVISORIAS LTDA</td><td>SUB_INT_0224_2025</td><td>R$&nbsp;11.631,78</td><td>R$&nbsp;0,00</td><td>R$&nbsp;11.631,78</td></tr><tr class="row-red"><td>25/01/2026</td><td>A &amp; D PINTURAS ESPECIALIZADAS LTDA</td><td>SUB_INT_0132_2024</td><td>R$&nbsp;10.733,25</td><td>R$&nbsp;12.632,40</td><td>-R$&nbsp;1.899,15</td></tr><tr class="row-red"><td>26/01/2026</td><td>VIBES SOLUCOES E ENGENHARIA LTDA</td><td>SUB_INT_0115_2024</td><td>R$&nbsp;80.941,14</td><td>R$&nbsp;0,00</td><td>R$&nbsp;80.941,14</td></tr><tr class="row-red"><td>02/02/2026</td><td>M C ENGENHARIA BRASIL LTDA</td><td>SUB_INT_0091_2024</td><td>R$&nbsp;15.756,02</td><td>R$&nbsp;0,00</td><td>R$&nbsp;15.756,02</td></tr><tr class="row-red"><td>18/02/2026</td><td>LIEMI SERVICOS DE ENGENHARIA LTDA</td><td>SUB_INT_0230_2025</td><td>R$&nbsp;2.750,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;2.750,00</td></tr><tr class="row-red"><td>23/02/2026</td><td>I9 ENGENHARIA E CONSTRUCAO LTDA</td><td>SUB_INT_0059_2023</td><td>R$&nbsp;21.631,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;21.631,00</td></tr><tr class="row-red"><td>26/02/2026</td><td>ANDREA CAMPOS MARTINS</td><td>SUB_INT_0216_2025</td><td>R$&nbsp;11.014,36</td><td>R$&nbsp;0,00</td><td>R$&nbsp;11.014,36</td></tr><tr class="row-red"><td>06/03/2026</td><td>LB &amp; C ENGENHARIA LTDA</td><td>SUB_INT_0229_2025</td><td>R$&nbsp;13.621,99</td><td>R$&nbsp;0,00</td><td>R$&nbsp;13.621,99</td></tr><tr class="row-red"><td>17/03/2026</td><td>TEOR DIVISORIAS SANITARIAS LTDA</td><td>SUB_INT_0173_2024</td><td>R$&nbsp;1.952,99</td><td>R$&nbsp;0,00</td><td>R$&nbsp;1.952,99</td></tr><tr class="row-red"><td>24/03/2026</td><td>B&amp;R SERVICOS DE MANUTENCAO E REPARACAO PATRIMONIAL LTDA</td><td>SUB_INT_0228_2025</td><td>R$&nbsp;13.297,65</td><td>R$&nbsp;0,00</td><td>R$&nbsp;13.297,65</td></tr><tr class="row-green"><td>07/04/2026</td><td>I9 ENGENHARIA E CONSTRUCAO LTDA</td><td>SUB_INT_0018_2023</td><td>R$&nbsp;16.139,62</td><td>R$&nbsp;16.139,62</td><td>R$&nbsp;0,00</td></tr><tr class="row-red"><td>16/04/2026</td><td>GRADISA SOLUCOES EM FERRO LTDA</td><td>SUB_INT_0186_2024</td><td>R$&nbsp;3.097,62</td><td>R$&nbsp;0,00</td><td>R$&nbsp;3.097,62</td></tr><tr class="row-red"><td>21/04/2026</td><td>PASCOAL ENGENHARIA LTDA</td><td>SUB_INT_0081_2024</td><td>R$&nbsp;14.144,13</td><td>R$&nbsp;0,00</td><td>R$&nbsp;14.144,13</td></tr><tr class="row-red"><td>21/06/2026</td><td>RK7 EMPREITEIRA LTDA</td><td>SUB_INT_0118_2024</td><td>R$&nbsp;10.449,50</td><td>R$&nbsp;0,00</td><td>R$&nbsp;10.449,50</td></tr><tr><td>22/10/2026</td><td>OR7 CONSTRUCOES E SERVICOS LTDA</td><td>SUB_INT_0172_2024</td><td>R$&nbsp;2.635,14</td><td>R$&nbsp;836,34</td><td>R$&nbsp;1.798,80</td></tr><tr><td>25/10/2026</td><td>WA ENGENHARIA E CONSTRUCAO LTDA</td><td>SUB_INT_0161_2024</td><td>R$&nbsp;2.320,76</td><td>R$&nbsp;0,00</td><td>R$&nbsp;2.320,76</td></tr><tr><td>09/11/2026</td><td>CONTESTE ENGENHARIA E TECNOLOGIA LTDA</td><td>SUB_INT_0028_2023</td><td>R$&nbsp;29.071,53</td><td>R$&nbsp;0,00</td><td>R$&nbsp;29.071,53</td></tr><tr><td>10/12/2026</td><td>CONSTRUMAX TECNOLOGIA EM CONSTRUCOES LTDA</td><td>SUB_INT_0146_2024</td><td>R$&nbsp;1.188,11</td><td>R$&nbsp;0,00</td><td>R$&nbsp;1.188,11</td></tr><tr><td>03/01/2027</td><td>FLAVIO SERGIO DE PAULA ENGENHARIA LTDA</td><td>SUB_INT_0135_2024</td><td>R$&nbsp;12.308,29</td><td>R$&nbsp;0,00</td><td>R$&nbsp;12.308,29</td></tr><tr><td>17/01/2027</td><td>GSW EDIFICACOES E PROJETOS</td><td>SUB_INT_0128_2024</td><td>R$&nbsp;4.717,21</td><td>R$&nbsp;0,00</td><td>R$&nbsp;4.717,21</td></tr><tr><td>21/01/2027</td><td>VAZ CONSTRUTORA &amp; INCORPORADORA LTDA</td><td>SUB_INT_0138_2024</td><td>R$&nbsp;19.115,10</td><td>R$&nbsp;19.115,10</td><td>R$&nbsp;0,00</td></tr><tr><td>21/01/2027</td><td>JFL ENGENHARIA E CONSTRUCAO LTDA</td><td>SUB_INT_0166_2024</td><td>R$&nbsp;2.200,03</td><td>R$&nbsp;0,00</td><td>R$&nbsp;2.200,03</td></tr><tr><td>27/01/2027</td><td>TAYLOR CONSTRUCOES LTDA</td><td>SUB_INT_0120_2024</td><td>R$&nbsp;31.757,95</td><td>R$&nbsp;7.382,40</td><td>R$&nbsp;24.375,55</td></tr><tr><td>22/02/2027</td><td>FLAVIO SERGIO DE PAULA ENGENHARIA LTDA</td><td>SUB_INT_0122_2024</td><td>R$&nbsp;2.717,41</td><td>R$&nbsp;0,00</td><td>R$&nbsp;2.717,41</td></tr><tr><td>19/04/2027</td><td>ENVEG BUCHEB INCORPORADORA CONSTRUTORA LTDA</td><td>SUB_INT_0129_2024</td><td>R$&nbsp;72.315,65</td><td>R$&nbsp;0,00</td><td>R$&nbsp;72.315,65</td></tr><tr><td>18/05/2027</td><td>QUIXADA PROJETOS CONSTRUCOES E REFORMA LTDA</td><td>SUB_INT_0112_2024</td><td>R$&nbsp;56.527,38</td><td>R$&nbsp;0,00</td><td>R$&nbsp;56.527,38</td></tr><tr><td>05/06/2027</td><td>SOARES GESSO COMERCIO E SERVICOS LTDA</td><td>SUB_INT_0114_2024</td><td>R$&nbsp;23.850,71</td><td>R$&nbsp;0,00</td><td>R$&nbsp;23.850,71</td></tr><tr><td>07/06/2027</td><td>CONSTRUTORA CAROL LTDA</td><td>SUB_INT_0042_2023</td><td>R$&nbsp;61.668,16</td><td>R$&nbsp;0,00</td><td>R$&nbsp;61.668,16</td></tr><tr><td>14/06/2027</td><td>DDS DEMOLIDORA SANTOS LTDA</td><td>SUB_INT_0027_2023</td><td>R$&nbsp;27.193,17</td><td>R$&nbsp;0,00</td><td>R$&nbsp;27.193,17</td></tr><tr><td>15/06/2027</td><td>ELEVA BRASIL SOLUCOES EM ELEVACAO SA</td><td>SUB_INT_0065_2023</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td></tr><tr><td>17/06/2027</td><td>SPGEO ENGENHARIA DE FUNDACOES LTDA.</td><td>SUB_INT_0047_2023</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td></tr><tr><td>23/06/2027</td><td>GRAN PISOS TECNOLOGIA EM PISOS INDUSTRIAIS LTDA</td><td>SUB_INT_0060_2023</td><td>R$&nbsp;67.231,42</td><td>R$&nbsp;0,00</td><td>R$&nbsp;67.231,42</td></tr><tr><td>23/06/2027</td><td>ISAR ENGENHARIA, CONSTRUCOES E MONTAGENS LTDA</td><td>SUB_INT_0192_2024</td><td>R$&nbsp;118.420,54</td><td>R$&nbsp;0,00</td><td>R$&nbsp;118.420,54</td></tr><tr><td>29/06/2027</td><td>ZUMBIATAM ENGENHARIA E SERVICOS LTDA</td><td>SUB_INT_0185_2024</td><td>R$&nbsp;25.746,44</td><td>R$&nbsp;0,00</td><td>R$&nbsp;25.746,44</td></tr><tr><td>01/07/2027</td><td>CONSTRUABE SERVICOS DE ENGENHARIA, CONSTRUCAO E REFORMA LTDA</td><td>SUB_INT_0160_2024</td><td>R$&nbsp;27.587,68</td><td>R$&nbsp;0,00</td><td>R$&nbsp;27.587,68</td></tr><tr><td>04/07/2027</td><td>PROTECAO TOLDOS E COBERTURAS LTDA</td><td>SUB_INT_0175_2024</td><td>R$&nbsp;28.940,22</td><td>R$&nbsp;0,00</td><td>R$&nbsp;28.940,22</td></tr><tr><td>05/07/2027</td><td>IM GESSO PINTURA E REFORMAS EM GERAL LTDA</td><td>SUB_INT_0137_2024</td><td>R$&nbsp;24.300,63</td><td>R$&nbsp;0,00</td><td>R$&nbsp;24.300,63</td></tr><tr><td>05/07/2027</td><td>PINTURAS PAULISTA RESTAURACAO E PINTURA PREDIAL LTDA</td><td>SUB_INT_0203_2024</td><td>R$&nbsp;22.062,01</td><td>R$&nbsp;0,00</td><td>R$&nbsp;22.062,01</td></tr><tr><td>05/07/2027</td><td>PINTURAS PAULISTA RESTAURACAO E PINTURA PREDIAL LTDA</td><td>SUB_INT_0204_2024</td><td>R$&nbsp;14.846,45</td><td>R$&nbsp;0,00</td><td>R$&nbsp;14.846,45</td></tr><tr><td>06/07/2027</td><td>JS EMPREITEIRA COMERCIO E SERVICOS</td><td>SUB_INT_0143_2024</td><td>R$&nbsp;14.705,50</td><td>R$&nbsp;0,00</td><td>R$&nbsp;14.705,50</td></tr><tr><td>06/07/2027</td><td>SOARES DIAS OBRAS &amp; CONSTRUCOES LTDA</td><td>SUB_INT_0174_2024</td><td>R$&nbsp;4.615,84</td><td>R$&nbsp;0,00</td><td>R$&nbsp;4.615,84</td></tr><tr><td>06/07/2027</td><td>LANDIN CONSTRCOES E REFORMAS LTDA</td><td>SUB_INT_0179_2024</td><td>R$&nbsp;2.946,26</td><td>R$&nbsp;2.051,40</td><td>R$&nbsp;894,86</td></tr><tr><td>06/07/2027</td><td>ARTMAX PINTURA E REFORMA PREDIAL LTDA</td><td>SUB_INT_0208_2024</td><td>R$&nbsp;3.978,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;3.978,00</td></tr><tr><td>08/07/2027</td><td>BETTER ENGENHARIA E SERVICOS LTDA</td><td>SUB_INT_0214_2025</td><td>R$&nbsp;6.960,62</td><td>R$&nbsp;0,00</td><td>R$&nbsp;6.960,62</td></tr><tr><td>14/07/2027</td><td>REMODELART CONSTRUCOES E REFORMAS LTDA</td><td>SUB_INT_0200_2024</td><td>R$&nbsp;4.400,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;4.400,00</td></tr><tr><td>04/08/2027</td><td>MERITHUS ENGENHARIA E CONSTRUCAO LTDA</td><td>SUB_INT_0134_2024</td><td>R$&nbsp;18.906,14</td><td>R$&nbsp;0,00</td><td>R$&nbsp;18.906,14</td></tr><tr><td>09/08/2027</td><td>SP FLORESTA LTDA</td><td>SUB_INT_0021_2023</td><td>R$&nbsp;27.372,71</td><td>R$&nbsp;0,00</td><td>R$&nbsp;27.372,71</td></tr><tr><td>12/08/2027</td><td>CONSTRUTORA R. OLIVEIRA LTDA</td><td>SUB_INT_0119_2024</td><td>R$&nbsp;26.374,63</td><td>R$&nbsp;118.635,06</td><td>-R$&nbsp;92.260,43</td></tr><tr><td>15/08/2027</td><td>CONPLAN ENGENHARIA LTDA</td><td>SUB_INT_0197_2024</td><td>R$&nbsp;2.330,59</td><td>R$&nbsp;0,00</td><td>R$&nbsp;2.330,59</td></tr><tr><td>24/08/2027</td><td>STAGNUM CONSTRUCAO E COMERCIO LTDA</td><td>SUB_INT_0127_2024</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td></tr><tr><td>25/08/2027</td><td>RD QUEROZ ENGENHARIA E CONSULTORIA LTDA</td><td>SUB_INT_0167_2024</td><td>R$&nbsp;2.808,16</td><td>R$&nbsp;0,00</td><td>R$&nbsp;2.808,16</td></tr><tr><td>15/09/2027</td><td>LB &amp; C ENGENHARIA LTDA</td><td>SUB_INT_0193_2024</td><td>R$&nbsp;40.280,52</td><td>R$&nbsp;0,00</td><td>R$&nbsp;40.280,52</td></tr><tr><td>16/09/2027</td><td>GABARRAO CONSTRUCOES LTDA</td><td>SUB_INT_0107_2024</td><td>R$&nbsp;33.827,47</td><td>R$&nbsp;0,00</td><td>R$&nbsp;33.827,47</td></tr><tr><td>22/09/2027</td><td>POLY CONSTRUCOES ESPORTIVAS LTDA</td><td>SUB_INT_0142_2024</td><td>R$&nbsp;15.391,70</td><td>R$&nbsp;360,84</td><td>R$&nbsp;15.030,86</td></tr><tr><td>23/09/2027</td><td>COSTA CONSTRUCOES</td><td>SUB_INT_0207_2024</td><td>R$&nbsp;12.545,37</td><td>R$&nbsp;0,00</td><td>R$&nbsp;12.545,37</td></tr><tr><td>26/09/2027</td><td>PREMOLDADOS PROTENDIT LTDA</td><td>SUB_INT_0093_2024</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td></tr><tr><td>29/09/2027</td><td>CONSTRUTORA CAROL LTDA</td><td>SUB_INT_0080_2024</td><td>R$&nbsp;96.074,95</td><td>R$&nbsp;0,00</td><td>R$&nbsp;96.074,95</td></tr><tr><td>30/09/2027</td><td>AA SPINDOLA DIVISORIAS LTDA</td><td>SUB_INT_0152_2024</td><td>R$&nbsp;10.204,82</td><td>R$&nbsp;0,00</td><td>R$&nbsp;10.204,82</td></tr><tr><td>10/10/2027</td><td>ELEGANCY COM. DE FORROS DIVISORIAS PISOS E GESSO LTDA.</td><td>SUB_INT_0153_2024</td><td>R$&nbsp;10.967,93</td><td>R$&nbsp;0,00</td><td>R$&nbsp;10.967,93</td></tr><tr><td>15/11/2027</td><td>VB ARQUITETURA E PROJETOS ESPECIAIS LTDA</td><td>SUB_INT_0111_2024</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;0,00</td></tr><tr><td>24/11/2027</td><td>JCT ENGENHARIA &amp; PAVIMENTACAO SLU LTDA</td><td>SUB_INT_0194_2024</td><td>R$&nbsp;6.411,52</td><td>R$&nbsp;0,00</td><td>R$&nbsp;6.411,52</td></tr><tr><td>30/11/2027</td><td>JSP PISOS LTDA</td><td>SUB_INT_0125_2024</td><td>R$&nbsp;44.404,29</td><td>R$&nbsp;0,00</td><td>R$&nbsp;44.404,29</td></tr><tr><td>02/12/2027</td><td>ALABASTRO CONSTRUCOES E TERRAPLANAGEM LTDA</td><td>SUB_INT_0181_2024</td><td>R$&nbsp;9.061,50</td><td>R$&nbsp;0,00</td><td>R$&nbsp;9.061,50</td></tr><tr><td>05/12/2027</td><td>FM COMERCIO E SERVICOS DE ESTRUTURAS METALICAS LTDA</td><td>SUB_INT_0099_2024</td><td>R$&nbsp;3.685,08</td><td>R$&nbsp;0,00</td><td>R$&nbsp;3.685,08</td></tr><tr><td>07/12/2027</td><td>D.I.V PRODUTOS E SERVICOS HOSPITALARES LTDA</td><td>SUB_INT_0147_2024</td><td>R$&nbsp;9.983,70</td><td>R$&nbsp;0,00</td><td>R$&nbsp;9.983,70</td></tr><tr><td>03/01/2028</td><td>ACCIAIO CONSTRUCOES METALICAS LTDA</td><td>SUB_INT_0100_2024</td><td>R$&nbsp;80.136,86</td><td>R$&nbsp;0,00</td><td>R$&nbsp;80.136,86</td></tr><tr><td>03/01/2028</td><td>PISO SAO PAULO CONCRETO POLIDO LTDA</td><td>SUB_INT_0121_2024</td><td>R$&nbsp;53.636,73</td><td>R$&nbsp;0,00</td><td>R$&nbsp;53.636,73</td></tr><tr><td>04/01/2028</td><td>ON EMPREITEIRA DA CONSTRUCAO CIVIL LTDA</td><td>SUB_INT_0094_2024</td><td>R$&nbsp;45.437,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;45.437,00</td></tr><tr><td>06/01/2028</td><td>C P DIAS PORTE PINTURAS</td><td>SUB_INT_0139_2024</td><td>R$&nbsp;40.307,73</td><td>R$&nbsp;4.918,66</td><td>R$&nbsp;35.389,07</td></tr><tr><td>10/01/2028</td><td>JB2R CONSTRUCOES, SERVICOS E PARTICIPACOES LTDA</td><td>SUB_INT_0162_2024</td><td>R$&nbsp;18.996,52</td><td>R$&nbsp;0,00</td><td>R$&nbsp;18.996,52</td></tr><tr><td>10/01/2028</td><td>KAIROS SOLUCOES CONSTRUTIVAS LTDA</td><td>SUB_INT_0198_2024</td><td>R$&nbsp;3.795,89</td><td>R$&nbsp;0,00</td><td>R$&nbsp;3.795,89</td></tr><tr><td>11/01/2028</td><td>MM EMPREITEIRA DE MAO DE OBRA E MATERIAIS LTDA</td><td>SUB_INT_0221_2025</td><td>R$&nbsp;3.545,17</td><td>R$&nbsp;0,00</td><td>R$&nbsp;3.545,17</td></tr><tr><td>11/01/2028</td><td>J A CONSTRUCAO LTDA</td><td>SUB_INT_0223_2025</td><td>R$&nbsp;17.360,53</td><td>R$&nbsp;0,00</td><td>R$&nbsp;17.360,53</td></tr><tr><td>12/01/2028</td><td>ELIMAX COMERCIO E SERVICOS EM ARTE CENICA LTDA</td><td>SUB_INT_0176_2024</td><td>R$&nbsp;40.681,18</td><td>R$&nbsp;0,00</td><td>R$&nbsp;40.681,18</td></tr><tr><td>12/01/2028</td><td>ISAR ENGENHARIA, CONSTRUCOES E MONTAGENS LTDA</td><td>SUB_INT_0231_2025</td><td>R$&nbsp;6.822,42</td><td>R$&nbsp;0,00</td><td>R$&nbsp;6.822,42</td></tr><tr><td>17/01/2028</td><td>NOVA UNIAO FUNDACOES LTDA</td><td>SUB_INT_0225_2025</td><td>R$&nbsp;4.250,00</td><td>R$&nbsp;0,00</td><td>R$&nbsp;4.250,00</td></tr><tr><td>18/01/2028</td><td>ZELO ASSESSORIA PORTARIA E LIMPEZA LTDA</td><td>SUB_INT_0015_2023</td><td>R$&nbsp;131.792,18</td><td>R$&nbsp;0,00</td><td>R$&nbsp;131.792,18</td></tr><tr><td>27/01/2028</td><td>ZELO ASSESSORIA PORTARIA E LIMPEZA LTDA</td><td>SUB_INT_0195_2024</td><td>R$&nbsp;30.096,22</td><td>R$&nbsp;0,00</td><td>R$&nbsp;30.096,22</td></tr><tr><td>15/02/2028</td><td>DALUTH ENGENHARIA</td><td>SUB_INT_0220_2025</td><td>R$&nbsp;14.849,59</td><td>R$&nbsp;0,00</td><td>R$&nbsp;14.849,59</td></tr><tr><td>18/05/2028</td><td>VEGASOLAR ENERGIA SERVICOS LTDA</td><td>SUB_INT_0165_2024</td><td>R$&nbsp;34.283,47</td><td>R$&nbsp;0,00</td><td>R$&nbsp;34.283,47</td></tr><tr><td>21/05/2028</td><td>GREEN VERDE PARA O MEIO AMBIENTE LTDA</td><td>SUB_INT_0210_2025</td><td>R$&nbsp;5.109,19</td><td>R$&nbsp;0,00</td><td>R$&nbsp;5.109,19</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="section-head"><span class="badge">3</span><h3>Contratos Próximos do Encerramento</h3></div>
+      <div class="card">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+          <div class="seg" id="seg-encerramento">
+            <button data-e="todos" class="active">Todos</button>
+            <button data-e="encerrado">Encerrado</button>
+            <button data-e="vencido">Vencido</button>
+            <button data-e="andamento">Em Andamento</button>
+          </div>
+        </div>
+        <div class="legend" style="margin-bottom:14px;">
+          <span><i style="background:var(--green-soft);border:1px solid var(--green);"></i>Encerrado</span>
+          <span><i style="background:var(--red-soft);border:1px solid var(--red);"></i>Vencido (Término ultrapassado, sem encerramento)</span>
+          <span><i style="background:var(--paper);border:1px solid var(--line);"></i>Em andamento</span>
+        </div>
+        <table id="tabela-encerramento">
+          <thead><tr><th>Término Previsto</th><th>Código</th><th>Contratado</th><th>Situação</th><th>Data Encerramento</th></tr></thead>
+          <tbody><tr class="row-green"><td>30/11/2022</td><td>OS_INT_0001_2022</td><td>SP FLORESTA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/04/2023</td><td>OS_INT_0010_2022</td><td>PROTEXFIRE EQUIPAMENTOS DE SEGURANCA E COMBATE A INCENDIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/04/2023</td><td>OS_INT_0016_2023</td><td>FOZZATTI &amp; FOZZATTI ENGENHEIROS ASSOCIADOS S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>14/05/2023</td><td>OS_INT_0025_2023</td><td>5D CONSULTORIA E LICENCIAMENTO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>27/06/2023</td><td>OS_INT_0033_2023</td><td>FCH PRO ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/06/2023</td><td>OS_INT_0006_2022</td><td>MICHEL SOLA CONSULTORIA E ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/07/2023</td><td>OS_INT_0050_2023</td><td>PLANTERRA ANALISES, MEIO AMBIENTE E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>06/08/2023</td><td>OS_INT_0053_2023</td><td>CAPM - TRANSPORTE LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>21/08/2023</td><td>OS_INT_0034_2023</td><td>GEBASE ENGENHARIA DE SOLOS E FUNDACOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/08/2023</td><td>OS_INT_0057_2023</td><td>WESLLEY FELIPPE MACHADO 42257261852</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/08/2023</td><td>OS_INT_0056_2023</td><td>JP TRANSPORTE DE AGUA POTAVEL LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/08/2023</td><td>OS_INT_0049_2023</td><td>ELIMAX COMERCIO E SERVICOS EM ARTE CENICA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/08/2023</td><td>OS_INT_0062_2023</td><td>EMES ENGENHARIA E MECANICA DOS SOLOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>05/09/2023</td><td>OS_INT_0023_2023</td><td>PROTEXFIRE EQUIPAMENTOS DE SEGURANCA E COMBATE A INCENDIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>06/09/2023</td><td>OS_INT_0060_2023</td><td>LOCTEMP COMERCIO E LOCACAO DE ALOJAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>07/09/2023</td><td>OS_INT_0061_2023</td><td>TELCERCAS TELAS E CERCAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>22/09/2023</td><td>OS_INT_0042_2023</td><td>LOLOLIX TRANSPORTE E REMOCAO DE ENTULHO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/09/2023</td><td>OS_INT_0063_2023</td><td>4N ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/09/2023</td><td>OS_INT_0064_2023</td><td>BRSONDA TECNOLOGIA EM SOLOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>05/10/2023</td><td>OS_INT_0052_2023</td><td>JU COPIAS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>06/10/2023</td><td>OS_INT_0054_2023</td><td>PTA LOCACOES DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/10/2023</td><td>OS_INT_0055_2023</td><td>ELIANA APARECIDA GRACIANO CHRISTONI 21550737805</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/10/2023</td><td>OS_INT_0051_2023</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/10/2023</td><td>OS_INT_0059_2023</td><td>PLANTERRA ANALISES, MEIO AMBIENTE E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>02/11/2023</td><td>OS_INT_0075_2023</td><td>FLB COMERCIO E ALUGUEL DE MAQUINAS E EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/11/2023</td><td>OS_INT_0069_2023</td><td>PLANTERRA ANALISES, MEIO AMBIENTE E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/11/2023</td><td>OS_INT_0080_2023</td><td>EDUARDO PENTEADO ENGENHARIA SOCIEDADE SIMPLES PURA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>24/11/2023</td><td>OS_INT_0082_2023</td><td>WB ENGENHARIA ELETRICA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/11/2023</td><td>OS_INT_0035_2023</td><td>ALVO K CONSULTORIA EM ENERGIA ELETRICA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/12/2023</td><td>OS_INT_0040_2023</td><td>ALVO K CONSULTORIA EM ENERGIA ELETRICA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/12/2023</td><td>OS_INT_0085_2023</td><td>DDS DEMOLIDORA SANTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/12/2023</td><td>OS_INT_0086_2023</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>04/12/2023</td><td>OS_INT_0066_2023</td><td>GEBASE ENGENHARIA DE SOLOS E FUNDACOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>07/12/2023</td><td>OS_INT_0087_2023</td><td>DDS DEMOLIDORA SANTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/12/2023</td><td>OS_INT_0088_2023</td><td>POTENCIA TERRAPLENAGEM E LOCACAO DE MAQUINAS SOCIEDADE UNIPESSOAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/12/2023</td><td>OS_INT_0089_2023</td><td>FUNDACOES EM TUBULOES PIATA S/S LIMITADA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/12/2023</td><td>OS_INT_0107_2023</td><td>FUNDACOES EM TUBULOES PIATA S/S LIMITADA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/12/2023</td><td>OS_INT_0071_2023</td><td>GEBASE ENGENHARIA DE SOLOS E FUNDACOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/12/2023</td><td>OS_INT_0058_2023</td><td>CHAMA INDUSTRIA COMERCIO E INSTALACOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>04/01/2024</td><td>OS_INT_0065_2023</td><td>GEPRO ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>04/01/2024</td><td>OS_INT_0067_2023</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>08/01/2024</td><td>OS_INT_0098_2023</td><td>FLBC TERRAPLENAGEM E CONSTRUCOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>09/01/2024</td><td>OS_INT_0090_2023</td><td>FAMILIA LAZER COMERCIO DE EQUIPAMENTOS PARA PISCINAS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>10/01/2024</td><td>OS_INT_0072_2023</td><td>GEOPROVA ENGENHARIA ENSAIOS E MONITORAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>10/01/2024</td><td>OS_INT_0076_2023</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>21/01/2024</td><td>OS_INT_0070_2023</td><td>GEOBLUE BRASIL SOLUCOES AMBIENTAIS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/01/2024</td><td>OS_INT_0084_2023</td><td>AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>05/02/2024</td><td>OS_INT_0068_2023</td><td>LOCTEMP COMERCIO E LOCACAO DE ALOJAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>07/02/2024</td><td>OS_INT_0100_2023</td><td>SOILGEO ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>09/02/2024</td><td>SUB_INT_0039_2023</td><td>GEOFIX ENGENHARIA E FUNDAÇÕES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>09/02/2024</td><td>SUB_INT_0040_2023</td><td>GEOFIX ENGENHARIA E FUNDAÇÕES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>10/02/2024</td><td>OS_INT_0073_2023</td><td>CEDRO ENGENHARIA, CONSULTORIA E COMERCIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>16/02/2024</td><td>SUB_INT_0041_2023</td><td>WA PERALTA ME</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>19/02/2024</td><td>OS_INT_0081_2023</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/02/2024</td><td>OS_INT_0105_2023</td><td>RAFAEL AUGUSTO CONCIANCI</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>22/02/2024</td><td>SUB_INT_0044_2023</td><td>GEOFIX ENGENHARIA E FUNDAÇÕES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>29/02/2024</td><td>OS_INT_0097_2023</td><td>INTEGRAR ENGENHARIA E CONSULTORIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/02/2024</td><td>OS_INT_0101_2023</td><td>KF CONSULTORIA E ENGENHARIA DE PROJETOS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>05/03/2024</td><td>SUB_INT_0004_2023</td><td>GOCIL SERVICOS GERAIS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>07/03/2024</td><td>OS_INT_0102_2023</td><td>OFICINA ARQUITETURA SS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>07/03/2024</td><td>OS_INT_0103_2023</td><td>CARVALHO &amp; TERRA ARQUITETOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>17/03/2024</td><td>SUB_INT_0052_2023</td><td>TREVO GRAMAS E OUTROS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>21/03/2024</td><td>OS_INT_0110_2023</td><td>AZEVEDO SETTE ADVOGADOS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>09/04/2024</td><td>OS_INT_0111_2024</td><td>CEDRO ENGENHARIA, CONSULTORIA E COMERCIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>15/04/2024</td><td>OS_INT_0077_2023</td><td>FLB COMERCIO E ALUGUEL DE MAQUINAS E EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/04/2024</td><td>OS_INT_0078_2023</td><td>ELPI LOCACAO DE EQUIPAMENTOS E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/04/2024</td><td>OS_INT_0079_2023</td><td>MIXDESIGN - TARTUCE ENGENHEIROS ASSOCIADOS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/04/2024</td><td>OS_INT_0108_2023</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/04/2024</td><td>OS_INT_0083_2023</td><td>DELTA P ELETROMECANICA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>04/05/2024</td><td>OS_INT_0121_2024</td><td>INSTRUMENTEC ENGENHARIA E COMERCIO UNIPESSOAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>06/05/2024</td><td>OS_INT_0099_2023</td><td>AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>14/05/2024</td><td>OS_INT_0113_2024</td><td>MIXDESIGN - TARTUCE ENGENHEIROS ASSOCIADOS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>15/05/2024</td><td>OS_INT_0145_2024</td><td>AZEVEDO SETTE ADVOGADOS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/05/2024</td><td>OS_INT_0091_2023</td><td>AGUAMAR TRANSPORTES LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>21/05/2024</td><td>OS_INT_0095_2023</td><td>JU COPIAS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/05/2024</td><td>OS_INT_0092_2023</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/05/2024</td><td>OS_INT_0093_2023</td><td>3FS MONTAGENS COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/05/2024</td><td>OS_INT_0094_2023</td><td>METROFORM SYSTEM TEC EM EQUIP P CONST LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/05/2024</td><td>OS_INT_0096_2023</td><td>PTA - COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/06/2024</td><td>OS_INT_0120_2024</td><td>MIXDESIGN - TARTUCE ENGENHEIROS ASSOCIADOS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/06/2024</td><td>OS_INT_0142_2024</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>06/06/2024</td><td>OS_INT_0123_2024</td><td>GEBASE ENGENHARIA DE SOLOS E FUNDACOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>07/06/2024</td><td>OS_INT_0125_2024</td><td>SMA LOCACOES DE EQUIPAMENTOS SOCIEDADE UNIPESSOAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>13/06/2024</td><td>OS_INT_0104_2023</td><td>FLB COMERCIO E ALUGUEL DE MAQUINAS E EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>14/06/2024</td><td>OS_INT_0127_2024</td><td>SMA LOCACOES DE EQUIPAMENTOS SOCIEDADE UNIPESSOAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/06/2024</td><td>OS_INT_0106_2023</td><td>METROFORM SYSTEM TEC EM EQUIP P CONST LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/06/2024</td><td>OS_INT_0128_2024</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>21/06/2024</td><td>OS_INT_0131_2024</td><td>PROETTI E BALDO - ENGENHARIA AMBIENTAL ESTUDOS TECNICOS E TREINAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/06/2024</td><td>OS_INT_0166_2024</td><td>ARMASA COMERCIO E SERVICOS PARA PERFURACAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/07/2024</td><td>OS_INT_0109_2023</td><td>DDS DEMOLIDORA SANTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>09/07/2024</td><td>OS_INT_0112_2024</td><td>ALFAMAX LOCADORA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>09/07/2024</td><td>SUB_INT_0027_2023</td><td>DDS DEMOLIDORA SANTOS LTDA</td><td>ENCERRADO</td><td>24/06/2025</td></tr><tr class="row-green"><td>11/07/2024</td><td>OS_INT_0135_2024</td><td>MAXIMA ENGENHARIA SAUDE E SEGURANCA DO TRABALHO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>14/07/2024</td><td>OS_INT_0114_2024</td><td>FELIPE MARTINS PINTO SOCIEDADE DE ADVOGADOS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>15/07/2024</td><td>OS_INT_0146_2024</td><td>SOLUTIONS RENTAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>15/07/2024</td><td>SUB_INT_0064_2023</td><td>CG LOCACAO DE GUINDASTES LTDA.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>17/07/2024</td><td>OS_INT_0115_2024</td><td>TRANSPORTES JOSE VERONEZI LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/07/2024</td><td>OS_INT_0116_2024</td><td>BRASGUIND GUINDASTES E TRANSPORTES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/07/2024</td><td>OS_INT_0117_2024</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/07/2024</td><td>OS_INT_0129_2024</td><td>MIXDESIGN - TARTUCE ENGENHEIROS ASSOCIADOS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/07/2024</td><td>OS_INT_0147_2024</td><td>PTA - COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/07/2024</td><td>SUB_INT_0034_2023</td><td>ITEMIZE SOLUCOES ESTRATEGICAS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/07/2024</td><td>OS_INT_0118_2024</td><td>FLBC TERRAPLENAGEM E CONSTRUCOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/07/2024</td><td>OS_INT_0148_2024</td><td>ACQUABRASILIS MEIO AMBIENTE LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/07/2024</td><td>OS_INT_0149_2024</td><td>KF CONSULTORIA E ENGENHARIA DE PROJETOS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>08/08/2024</td><td>OS_INT_0122_2024</td><td>OBRA SECA PROJETO E CONSULTORIA EM IMPERMEABILIZACAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>08/08/2024</td><td>OS_INT_0152_2024</td><td>GEPRO ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>08/08/2024</td><td>OS_INT_0154_2024</td><td>GEPRO ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>09/08/2024</td><td>SUB_INT_0038_2023</td><td>APP PRE MOLDADOS S/A</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>19/08/2024</td><td>OS_INT_0126_2024</td><td>SP LOG EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/08/2024</td><td>OS_INT_0130_2024</td><td>3FS MONTAGENS COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/08/2024</td><td>OS_INT_0132_2024</td><td>SP LOG EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/08/2024</td><td>OS_INT_0165_2024</td><td>WB ENGENHARIA ELETRICA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/08/2024</td><td>OS_INT_0167_2024</td><td>HOOK ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>31/08/2024</td><td>OS_INT_0139_2024</td><td>HORIZONTES ARQUITETURA E URBANISMO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>05/09/2024</td><td>SUB_INT_0048_2023</td><td>V.W.F. COMERCIO E FUNDACOES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>06/09/2024</td><td>SUB_INT_0104_2024</td><td>FORTEPISO PRESTACAO DE SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>09/09/2024</td><td>SUB_INT_0084_2024</td><td>RTI MONTAGEM DE PRE MOLDADOS E METALICAS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/09/2024</td><td>OS_INT_0169_2024</td><td>SOLUTIONS RENTAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/09/2024</td><td>OS_INT_0170_2024</td><td>PTA - COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/09/2024</td><td>OS_INT_0171_2024</td><td>HOOK ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>13/09/2024</td><td>OS_INT_0133_2024</td><td>METROFORM SYSTEM TEC EM EQUIP P CONST LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/09/2024</td><td>OS_INT_0173_2024</td><td>EDUARDO PENTEADO ENGENHARIA SOCIEDADE SIMPLES PURA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/09/2024</td><td>OS_INT_0144_2024</td><td>MIXDESIGN - TARTUCE ENGENHEIROS ASSOCIADOS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/09/2024</td><td>OS_INT_0174_2024</td><td>AZEVEDO SETTE ADVOGADOS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>24/09/2024</td><td>OS_INT_0136_2024</td><td>CZLOC LOCACAO DE EQUIPAMENTOS PARA CONSTRUCAO CIVIL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>28/09/2024</td><td>SUB_INT_0088_2024</td><td>NEIVA LOCACAO DE GUINDASTES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>30/09/2024</td><td>OS_INT_0138_2024</td><td>DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/10/2024</td><td>OS_INT_0141_2024</td><td>FLBC TERRAPLENAGEM E CONSTRUCOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>04/10/2024</td><td>OS_INT_0168_2024</td><td>MAXIMA ENGENHARIA SAUDE E SEGURANCA DO TRABALHO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>05/10/2024</td><td>OS_INT_0119_2024</td><td>METROFORM SYSTEM TEC EM EQUIP P CONST LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/10/2024</td><td>OS_INT_0143_2023</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/10/2024</td><td>OS_INT_0181_2024</td><td>ACQUABRASILIS MEIO AMBIENTE LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/10/2024</td><td>OS_INT_0182_2024</td><td>GEOPROVA ENGENHARIA ENSAIOS E MONITORAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/10/2024</td><td>OS_INT_0038_2023</td><td>JG VIEIRA AR CONDICIONADO, REFRIGERACAO E MANUTENCAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/10/2024</td><td>OS_INT_0200_2024</td><td>SOLUTIONS RENTAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/10/2024</td><td>OS_INT_0175_2024</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/11/2024</td><td>OS_INT_0178_2024</td><td>HOOK ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/11/2024</td><td>OS_INT_0158_2024</td><td>ALFAMAX LOCADORA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>22/11/2024</td><td>OS_INT_0161_2024</td><td>URBE LOCACAO INDUSTRIA E COMERCIO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>22/11/2024</td><td>OS_INT_0162_2024</td><td>3FS MONTAGENS COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>22/11/2024</td><td>OS_INT_0163_2024</td><td>MAIA E MARTINES ARQUITETURA E DESIGN LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>22/11/2024</td><td>OS_INT_0180_2024</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/11/2024</td><td>OS_INT_0164_2024</td><td>HORTA SOCIEDADE DE ADVOGADOS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/11/2024</td><td>OS_INT_0198_2024</td><td>GEPRO ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/11/2024</td><td>OS_INT_0194_2024</td><td>ARMASA COMERCIO E SERVICOS PARA PERFURACAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>27/11/2024</td><td>OS_INT_0220_2024</td><td>JFL ENGENHARIA E CONSTRUCAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/11/2024</td><td>SUB_INT_0136_2024</td><td>CADI - CAMPOS DIAS CONSTRUCOES LTDA - EPP</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>01/12/2024</td><td>SUB_INT_0001_2022</td><td>HORIZONTES ARQUITETURA E URBANISMO LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-red"><td>04/12/2024</td><td>SUB_INT_0056_2023</td><td>VOTORANTIM CIMENTOS S.A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>08/12/2024</td><td>OS_INT_0188_2024</td><td>FLB COMERCIO E ALUGUEL DE MAQUINAS E EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/12/2024</td><td>OS_INT_0189_2024</td><td>PROETTI E BALDO - ENGENHARIA AMBIENTAL ESTUDOS TECNICOS E TREINAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/12/2024</td><td>OS_INT_0156_2024</td><td>JU COPIAS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/12/2024</td><td>OS_INT_0172_2024</td><td>SOCIETAS ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>12/12/2024</td><td>SUB_INT_0075_2023</td><td>LOLOLIX TRANSPORTE E REMOCAO DE ENTULHO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>15/12/2024</td><td>OS_INT_0203_2024</td><td>PLANTERRA ANALISES, MEIO AMBIENTE E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/12/2024</td><td>OS_INT_0209_2024</td><td>MODULUS - ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>24/12/2024</td><td>OS_INT_0137_2024</td><td>INSTRUMENTEC ENGENHARIA E COMERCIO UNIPESSOAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/12/2024</td><td>OS_INT_0134_2024</td><td>COOPERATIVA DE TRABALHO RAINHA DA RECICLAGEM</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/12/2024</td><td>OS_INT_0153_2024</td><td>COOPERATIVA DE TRABALHO RAINHA DA RECICLAGEM</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/01/2025</td><td>OS_INT_0201_2024</td><td>HOOK ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/01/2025</td><td>SUB_INT_0080_2024</td><td>CONSTRUTORA CAROL LTDA</td><td>ENCERRADO</td><td>09/10/2025</td></tr><tr class="row-green"><td>03/01/2025</td><td>SUB_INT_0081_2024</td><td>PASCOAL ENGENHARIA LTDA</td><td>EM ANDAMENTO</td><td>24/01/2025</td></tr><tr class="row-green"><td>09/01/2025</td><td>OS_INT_0176_2024</td><td>SOILGEO ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/01/2025</td><td>OS_INT_0177_2024</td><td>SMA LOCACOES DE EQUIPAMENTOS SOCIEDADE UNIPESSOAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/01/2025</td><td>OS_INT_0179_2024</td><td>METROFORM SYSTEM TEC EM EQUIP P CONST LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/01/2025</td><td>OS_INT_0159_2024</td><td>MIXDESIGN - TARTUCE ENGENHEIROS ASSOCIADOS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/01/2025</td><td>SUB_INT_0028_2023</td><td>CONTESTE ENGENHARIA E TECNOLOGIA LTDA</td><td>ENCERRADO</td><td>24/01/2025</td></tr><tr class="row-green"><td>20/01/2025</td><td>OS_INT_0160_2024</td><td>EMPRESA JUNIOR ASSOCIACAO CIVIL</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/01/2025</td><td>SUB_INT_0122_2024</td><td>FLAVIO SERGIO DE PAULA ENGENHARIA LTDA</td><td>ENCERRADO</td><td>04/03/2025</td></tr><tr class="row-green"><td>27/01/2025</td><td>SUB_INT_0118_2024</td><td>RK7 EMPREITEIRA LTDA</td><td>EM ANDAMENTO</td><td>27/01/2024</td></tr><tr class="row-green"><td>28/01/2025</td><td>SUB_INT_0016_2023</td><td>ALAN TORRES FERREIRA DE OLIVEIRA</td><td>ENCERRADO</td><td>28/01/2025</td></tr><tr class="row-green"><td>30/01/2025</td><td>OS_INT_0226_2024</td><td>AZEVEDO SETTE ADVOGADOS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>30/01/2025</td><td>SUB_INT_0091_2024</td><td>M C ENGENHARIA BRASIL LTDA</td><td>ENCERRADO</td><td>13/02/2024</td></tr><tr class="row-green"><td>31/01/2025</td><td>SUB_INT_0138_2024</td><td>VAZ CONSTRUTORA &amp; INCORPORADORA LTDA</td><td>EM ANDAMENTO</td><td>31/01/2025</td></tr><tr class="row-red"><td>04/02/2025</td><td>SUB_INT_0159_2024</td><td>UNESTACA ENGENHARIA E ESTAQUEAMENTO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>12/02/2025</td><td>OS_INT_0191_2024</td><td>SANICLEAN LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/02/2025</td><td>OS_INT_0192_2024</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/02/2025</td><td>SUB_INT_0097_2024</td><td>PONTUAL COMERCIO E SERVICOS DE AUTOMOCAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/02/2025</td><td>OS_INT_0197_2024</td><td>3FS MONTAGENS COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/02/2025</td><td>OS_INT_0186_2024</td><td>INTERPOWER SISTEMAS DE ENERGIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/02/2025</td><td>OS_INT_0199_2024</td><td>3FS MONTAGENS COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/02/2025</td><td>OS_INT_0216_2024</td><td>INTERPOWER SISTEMAS DE ENERGIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/02/2025</td><td>OS_INT_0223_2024</td><td>GUINDASTEC GUINDASTES E SERVICOS TECNICOS LIMITADA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>02/03/2025</td><td>OS_INT_0202_2024</td><td>TERRA GOMES LOCACAO E TERRAPLENAGEM LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>02/03/2025</td><td>OS_INT_0206_2024</td><td>TERRA GOMES LOCACAO E TERRAPLENAGEM LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>03/03/2025</td><td>SUB_INT_0103_2024</td><td>CONEXAO MONTAGENS TECNICAS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>07/03/2025</td><td>OS_INT_0204_2024</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/03/2025</td><td>OS_INT_0261_2025</td><td>HMG PAVIMENTACAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/03/2025</td><td>OS_INT_0205_2024</td><td>AG - LOCACAO DE MAQUINAS E EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>14/03/2025</td><td>SUB_INT_0106_2024</td><td>ALIANCA CONSULTORIA EM GESTAO EMPRESARIAL LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>18/03/2025</td><td>OS_INT_0208_2024</td><td>D2W TECNOLOGIA E ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/03/2025</td><td>SUB_INT_0109_2024</td><td>IUS NATURA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>21/03/2025</td><td>SUB_INT_0054_2023</td><td>TORCISAO COMERCIAL E INDUSTRIAL DE ACOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>23/03/2025</td><td>OS_INT_0210_2024</td><td>DALTON ENGENHARIA E CONSULTORIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/03/2025</td><td>OS_INT_0211_2024</td><td>PROTEXFIRE EQUIPAMENTOS DE SEGURANCA E COMBATE A INCENDIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/03/2025</td><td>OS_INT_0183_2024</td><td>D2W TECNOLOGIA E ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/04/2025</td><td>OS_INT_0140_2024</td><td>CZLOC LOCACAO DE EQUIPAMENTOS PARA CONSTRUCAO CIVIL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/04/2025</td><td>OS_INT_0213_2024</td><td>CAVA ENGENHARIA DE INFRAESTRUTURA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>01/04/2025</td><td>SUB_INT_0177_2024</td><td>WIND GLASS COMERCIO DE VIDROS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>04/04/2025</td><td>OS_INT_0255_2025</td><td>JOSIVALDO CANDIDO DA SILVA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>09/04/2025</td><td>OS_INT_0214_2024</td><td>AZEVEDO SETTE ADVOGADOS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>10/04/2025</td><td>OS_INT_0259_2025</td><td>PAULO SERGIO FERREIRA DA SILVA 11671006895</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>10/04/2025</td><td>OS_INT_0260_2025</td><td>B&amp;R SERVICOS DE MANUTENCAO E REPARACAO PATRIMONIAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/04/2025</td><td>OS_INT_0237_2024</td><td>NBA ELEVADORES E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/04/2025</td><td>SUB_INT_0042_2023</td><td>CONSTRUTORA CAROL LTDA</td><td>ENCERRADO</td><td>17/06/2025</td></tr><tr class="row-green"><td>18/04/2025</td><td>OS_INT_0248_2025</td><td>B&amp;R SERVICOS DE MANUTENCAO E REPARACAO PATRIMONIAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>21/04/2025</td><td>SUB_INT_0120_2024</td><td>TAYLOR CONSTRUCOES LTDA</td><td>EM ANDAMENTO</td><td>06/02/2025</td></tr><tr class="row-green"><td>22/04/2025</td><td>OS_INT_0217_2024</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>22/04/2025</td><td>OS_INT_0218_2024</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>22/04/2025</td><td>OS_INT_0219_2024</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/04/2025</td><td>OS_INT_0221_2024</td><td>SANICLEAN LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/04/2025</td><td>OS_INT_0229_2024</td><td>NBA ELEVADORES E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/04/2025</td><td>SUB_INT_0114_2024</td><td>SOARES GESSO COMERCIO E SERVICOS LTDA</td><td>ENCERRADO</td><td>15/06/2025</td></tr><tr class="row-green"><td>26/04/2025</td><td>SUB_INT_0100_2024</td><td>ACCIAIO CONSTRUCOES METALICAS LTDA</td><td>ENCERRADO</td><td>13/01/2026</td></tr><tr class="row-green"><td>28/04/2025</td><td>OS_INT_0222_2024</td><td>D2W TECNOLOGIA E ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/04/2025</td><td>OS_INT_0224_2023</td><td>APOIO ASSESSORIA E PROJETO DE FUNDACOES S/S LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>29/04/2025</td><td>SUB_INT_0129_2024</td><td>ENVEG BUCHEB INCORPORADORA CONSTRUTORA LTDA</td><td>ENCERRADO</td><td>29/04/2025</td></tr><tr class="row-green"><td>30/04/2025</td><td>OS_INT_0225_2024</td><td>TERRA GOMES LOCACAO E TERRAPLENAGEM LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/05/2025</td><td>OS_INT_0184_2024</td><td>GOD SISTEMA DE PROTECAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/05/2025</td><td>OS_INT_0185_2024</td><td>CZLOC LOCACAO DE EQUIPAMENTOS PARA CONSTRUCAO CIVIL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/05/2025</td><td>OS_INT_0187_2024</td><td>CZLOC LOCACAO DE EQUIPAMENTOS PARA CONSTRUCAO CIVIL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/05/2025</td><td>OS_INT_0253_2025</td><td>DINFER ESQUADRIAS METALICAS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/05/2025</td><td>OS_INT_0263_2025</td><td>GOD SISTEMA DE PROTECAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>01/05/2025</td><td>SUB_INT_0073_2023</td><td>CONCRESERV SUDESTE S/A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>01/05/2025</td><td>SUB_INT_0089_2024</td><td>CONCRESERV SUDESTE S/A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>02/05/2025</td><td>OS_INT_0190_2024</td><td>PLACING DOOR LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>02/05/2025</td><td>OS_INT_0227_2024</td><td>DINFER ESQUADRIAS METALICAS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>02/05/2025</td><td>OS_INT_0231_2024</td><td>PLACING DOOR LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>06/05/2025</td><td>SUB_INT_0128_2024</td><td>GSW EDIFICACOES E PROJETOS</td><td>EM ANDAMENTO</td><td>27/01/2025</td></tr><tr class="row-green"><td>07/05/2025</td><td>OS_INT_0244_2025</td><td>NBA ELEVADORES E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>14/05/2025</td><td>OS_INT_0215_2024</td><td>METROFORM SYSTEM TEC EM EQUIP P CONST LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/05/2025</td><td>OS_INT_0207_2024</td><td>FLB COMERCIO E ALUGUEL DE MAQUINAS E EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/05/2025</td><td>OS_INT_0262_2025</td><td>ARMASA COMERCIO E SERVICOS PARA PERFURACAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>21/05/2025</td><td>SUB_INT_0132_2024</td><td>A &amp; D PINTURAS ESPECIALIZADAS LTDA</td><td>EM ANDAMENTO</td><td>05/02/2024</td></tr><tr class="row-green"><td>26/05/2025</td><td>OS_INT_0230_2024</td><td>JU COPIAS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>26/05/2025</td><td>SUB_INT_0067_2023</td><td>ELEVADORES ATLAS SCHINDLER LTDA.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>26/05/2025</td><td>SUB_INT_0068_2023</td><td>ELEVADORES ATLAS SCHINDLER LTDA.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>26/05/2025</td><td>SUB_INT_0069_2023</td><td>ELEVADORES ATLAS SCHINDLER LTDA.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>26/05/2025</td><td>SUB_INT_0070_2023</td><td>ELEVADORES ATLAS SCHINDLER LTDA.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>27/05/2025</td><td>SUB_INT_0134_2024</td><td>MERITHUS ENGENHARIA E CONSTRUCAO LTDA</td><td>EM ANDAMENTO</td><td>14/08/2025</td></tr><tr class="row-green"><td>28/05/2025</td><td>OS_INT_0234_2024</td><td>RAFA ENTULHOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/05/2025</td><td>SUB_INT_0135_2024</td><td>FLAVIO SERGIO DE PAULA ENGENHARIA LTDA</td><td>ENCERRADO</td><td>13/01/2025</td></tr><tr class="row-green"><td>30/05/2025</td><td>SUB_INT_0092_2024</td><td>MASTER PLATE PISOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>01/06/2025</td><td>OS_INT_0274_2025</td><td>D.S.O. ESTRUTURAL SERRALHERIA E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>03/06/2025</td><td>SUB_INT_0035_2023</td><td>VOTORANTIM CIMENTOS S.A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>03/06/2025</td><td>SUB_INT_0037_2023</td><td>VOTORANTIM CIMENTOS S.A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>03/06/2025</td><td>SUB_INT_0205_2024</td><td>GLOBAL TOLDOS E LUMINOSOS INDUSTRIA E COMERCIO LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-green"><td>08/06/2025</td><td>OS_INT_0232_2024</td><td>AG - LOCACAO DE MAQUINAS E EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>10/06/2025</td><td>OS_INT_0258_2025</td><td>D.S.O. ESTRUTURAL SERRALHERIA E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/06/2025</td><td>OS_INT_0236_2024</td><td>EXCELENCIA SANEAMENTO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/06/2025</td><td>OS_INT_0246_2025</td><td>INTERPOWER SISTEMAS DE ENERGIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>OS_INT_0238_2024</td><td>PROTEXFIRE EQUIPAMENTOS DE SEGURANCA E COMBATE A INCENDIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>OS_INT_0239_2024</td><td>D2W TECNOLOGIA E ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>OS_INT_0240_2024</td><td>D2W TECNOLOGIA E ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>OS_INT_0241_2024</td><td>TECNOGERA - LOCACAO E TRANSFORMACAO DE ENERGIA SA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>OS_INT_0264_2025</td><td>TECNOGERA - LOCACAO E TRANSFORMACAO DE ENERGIA SA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>SUB_INT_0057_2023</td><td>MFM EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>SUB_INT_0058_2023</td><td>MFM EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>SUB_INT_0079_2023</td><td>MFM EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/06/2025</td><td>SUB_INT_0101_2024</td><td>MFM EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/06/2025</td><td>OS_INT_0242_2024</td><td>PROTEXFIRE EQUIPAMENTOS DE SEGURANCA E COMBATE A INCENDIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/06/2025</td><td>OS_INT_0268_2025</td><td>ALTERNATIVA - DESENTUPIDORA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>19/06/2025</td><td>SUB_INT_0141_2024</td><td>INSANE RAMPS DO BRASIL LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>20/06/2025</td><td>OS_INT_0250_2025</td><td>DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/06/2025</td><td>OS_INT_0276_2025</td><td>J L FERREIRA COMERCIO E SERVICOS DE TELAS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>21/06/2025</td><td>SUB_INT_0144_2024</td><td>KE CONSTRUCOES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>23/06/2025</td><td>OS_INT_0269_2025</td><td>PLACING DOOR LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/06/2025</td><td>SUB_INT_0011_2023</td><td>GRIFA ENGENHARIA E ASSOCIADOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/06/2025</td><td>SUB_INT_0142_2024</td><td>POLY CONSTRUCOES ESPORTIVAS LTDA</td><td>ENCERRADO</td><td>02/10/2025</td></tr><tr class="row-green"><td>24/06/2025</td><td>SUB_INT_0200_2024</td><td>REMODELART CONSTRUCOES E REFORMAS LTDA</td><td>ENCERRADO</td><td>24/07/2025</td></tr><tr class="row-green"><td>25/06/2025</td><td>SUB_INT_0019_2023</td><td>5D CONSULTORIA E LICENCIAMENTO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/06/2025</td><td>SUB_INT_0065_2023</td><td>ELEVA BRASIL SOLUCOES EM ELEVACAO SA</td><td>ENCERRADO</td><td>25/06/2025</td></tr><tr class="row-green"><td>25/06/2025</td><td>SUB_INT_0066_2023</td><td>ELEVA BRASIL SOLUCOES EM ELEVACAO SA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/06/2025</td><td>OS_INT_0278_2025</td><td>JOSIVALDO CANDIDO DA SILVA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>27/06/2025</td><td>SUB_INT_0046_2023</td><td>RGP CONSULTORIA EM SEGURANCA DO TRABALHO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>27/06/2025</td><td>SUB_INT_0047_2023</td><td>SPGEO ENGENHARIA DE FUNDACOES LTDA.</td><td>EM ANDAMENTO</td><td>27/06/2025</td></tr><tr class="row-green"><td>27/06/2025</td><td>SUB_INT_0146_2024</td><td>CONSTRUMAX TECNOLOGIA EM CONSTRUCOES LTDA</td><td>EM ANDAMENTO</td><td>20/12/2024</td></tr><tr class="row-red"><td>27/06/2025</td><td>SUB_INT_0102_2024</td><td>FERCAP ESQUADRIAS METALICAS INDUSTRIA E COMERCIO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>30/06/2025</td><td>SUB_INT_0012_2023</td><td>MAFRI ENGENHARIA LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-green"><td>30/06/2025</td><td>SUB_INT_0062_2023</td><td>PREMOLDADOS PROTENDIT LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>03/07/2025</td><td>SUB_INT_0060_2023</td><td>GRAN PISOS TECNOLOGIA EM PISOS INDUSTRIAIS LTDA</td><td>ENCERRADO</td><td>03/07/2025</td></tr><tr class="row-green"><td>04/07/2025</td><td>OS_INT_0257_2025</td><td>HM LOCACOES DE MODULOS METALICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>07/07/2025</td><td>SUB_INT_0123_2024</td><td>VBL SOLUCOES ESTRUTURAIS LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-green"><td>08/07/2025</td><td>SUB_INT_0002_2023</td><td>ALUIZIO A.M. D`AVILA ENGENHARIA DE PROJETOS S/S</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>08/07/2025</td><td>SUB_INT_0095_2024</td><td>ELEVA BRASIL SOLUCOES EM ELEVACAO SA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>09/07/2025</td><td>SUB_INT_0049_2023</td><td>CAPM - TRANSPORTE LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-red"><td>11/07/2025</td><td>SUB_INT_0078_2023</td><td>ELEVA BRASIL SOLUCOES EM ELEVACAO SA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>13/07/2025</td><td>OS_INT_0247_2025</td><td>PROETTI E BALDO - ENGENHARIA AMBIENTAL ESTUDOS TECNICOS E TREINAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>14/07/2025</td><td>SUB_INT_0175_2024</td><td>PROTECAO TOLDOS E COBERTURAS LTDA</td><td>ENCERRADO</td><td>14/07/2025</td></tr><tr class="row-green"><td>16/07/2025</td><td>SUB_INT_0143_2024</td><td>JS EMPREITEIRA COMERCIO E SERVICOS</td><td>ENCERRADO</td><td>16/07/2025</td></tr><tr class="row-green"><td>16/07/2025</td><td>SUB_INT_0208_2024</td><td>ARTMAX PINTURA E REFORMA PREDIAL LTDA</td><td>ENCERRADO</td><td>16/07/2025</td></tr><tr class="row-green"><td>16/07/2025</td><td>SUB_INT_0206_2024</td><td>NEIVA LOCACAO DE GUINDASTES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/07/2025</td><td>OS_INT_0249_2025</td><td>PRO FIX CONSTRUCAO E TRATAMENTO DE AGUA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/07/2025</td><td>SUB_INT_0098_2024</td><td>DDS DEMOLIDORA SANTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/07/2025</td><td>SUB_INT_0174_2024</td><td>SOARES DIAS OBRAS &amp; CONSTRUCOES LTDA</td><td>ENCERRADO</td><td>16/07/2025</td></tr><tr class="row-green"><td>21/07/2025</td><td>SUB_INT_0170_2024</td><td>DISTRIBUICAO SINTETICA INTERNACIONAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/07/2025</td><td>OS_INT_0252_2025</td><td>COMERCIAL ROSALLES COMERCIO DE MATERIAIS DE CONSTRUCAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>28/07/2025</td><td>SUB_INT_0155_2024</td><td>COMAF COLOCACAO E MONTAGEM DE FORROS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>01/08/2025</td><td>SUB_INT_0017_2023</td><td>CONCRESERV SUDESTE S/A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>01/08/2025</td><td>SUB_INT_0074_2023</td><td>CONCRESERV SUDESTE S/A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>02/08/2025</td><td>OS_INT_0254_2025</td><td>SOILGEO ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>03/08/2025</td><td>SUB_INT_0076_2023</td><td>VOTORANTIM CIMENTOS S.A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>13/08/2025</td><td>SUB_INT_0045_2023</td><td>PREMOLDADOS PROTENDIT LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/08/2025</td><td>SUB_INT_0160_2024</td><td>CONSTRUABE SERVICOS DE ENGENHARIA, CONSTRUCAO E REFORMA LTDA</td><td>EM ANDAMENTO</td><td>11/07/2025</td></tr><tr class="row-green"><td>19/08/2025</td><td>SUB_INT_0021_2023</td><td>SP FLORESTA LTDA</td><td>ENCERRADO</td><td>19/08/2025</td></tr><tr class="row-green"><td>22/08/2025</td><td>SUB_INT_0161_2024</td><td>WA ENGENHARIA E CONSTRUCAO LTDA</td><td>ENCERRADO</td><td>04/11/2024</td></tr><tr class="row-green"><td>22/08/2025</td><td>SUB_INT_0119_2024</td><td>CONSTRUTORA R. OLIVEIRA LTDA</td><td>EM ANDAMENTO</td><td>22/08/2025</td></tr><tr class="row-green"><td>25/08/2025</td><td>SUB_INT_0197_2024</td><td>CONPLAN ENGENHARIA LTDA</td><td>EM ENCERRAMENTO</td><td>25/08/2025</td></tr><tr class="row-green"><td>28/08/2025</td><td>SUB_INT_0063_2023</td><td>GEOFIX ENGENHARIA E FUNDAÇÕES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/08/2025</td><td>SUB_INT_0130_2024</td><td>GEOFIX ENGENHARIA E FUNDAÇÕES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>02/09/2025</td><td>SUB_INT_0166_2024</td><td>JFL ENGENHARIA E CONSTRUCAO LTDA</td><td>EM ANDAMENTO</td><td>31/01/2025</td></tr><tr class="row-red"><td>03/09/2025</td><td>SUB_INT_0036_2023</td><td>VOTORANTIM CIMENTOS S.A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>03/09/2025</td><td>SUB_INT_0127_2024</td><td>STAGNUM CONSTRUCAO E COMERCIO LTDA</td><td>ENCERRADO</td><td>03/09/2025</td></tr><tr class="row-green"><td>04/09/2025</td><td>SUB_INT_0167_2024</td><td>RD QUEROZ ENGENHARIA E CONSULTORIA LTDA</td><td>ENCERRADO</td><td>04/09/2025</td></tr><tr class="row-green"><td>05/09/2025</td><td>SUB_INT_0050_2023</td><td>AZEVEDO SETTE ADVOGADOS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>08/09/2025</td><td>SUB_INT_0105_2024</td><td>ESTAF EQUIPAMENTOS S/A</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>08/09/2025</td><td>SUB_INT_0116_2024</td><td>PESO G LOCACAO DE GUINDASTES E REMOCAO INDUSTRIAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>09/09/2025</td><td>SUB_INT_0043_2023</td><td>CASSOL PRE-FABRICADOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>09/09/2025</td><td>SUB_INT_0168_202</td><td>SOLIS TRADE LTDA. - FLEX COURT</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-green"><td>15/09/2025</td><td>SUB_INT_0014_2023</td><td>PRESENZA MARRONI AGRIMENSURA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>15/09/2025</td><td>SUB_INT_0072_2023</td><td>COMPLIANCE BRAZIL ASSESSORIA EMPRESARIAL LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>15/09/2025</td><td>SUB_INT_0087_2024</td><td>HERON TECNOLOGIA LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>15/09/2025</td><td>SUB_INT_0218_2025</td><td>JU COPIAS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>17/09/2025</td><td>OS_INT_0266_2025</td><td>URBE MONTAGEM E INSTALACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/09/2025</td><td>OS_INT_0267_2025</td><td>B&amp;R SERVICOS DE MANUTENCAO E REPARACAO PATRIMONIAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/09/2025</td><td>SUB_INT_0053_2023</td><td>JP TRANSPORTE DE AGUA POTAVEL LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/09/2025</td><td>SUB_INT_0107_2024</td><td>GABARRAO CONSTRUCOES LTDA</td><td>ENCERRADO</td><td>26/09/2025</td></tr><tr class="row-red"><td>19/09/2025</td><td>SUB_INT_0007_2023</td><td>DINAMICA LOGISTICA E SERVICOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>21/09/2025</td><td>SUB_INT_0112_2024</td><td>QUIXADA PROJETOS CONSTRUCOES E REFORMA LTDA</td><td>EM ENCERRAMENTO</td><td>05/02/2026</td></tr><tr class="row-red"><td>21/09/2025</td><td>SUB_INT_0188_2024</td><td>IND E COM DE POLTRONAS PARA CINEMA STA CLARA LTDA ME</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>22/09/2025</td><td>SUB_INT_0171_2024</td><td>J. ALMEIDA DA SILVA TRANSPORTES</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>22/09/2025</td><td>SUB_INT_0178_2024</td><td>TK ELEVADORES BRASIL LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>25/09/2025</td><td>SUB_INT_0113_2024</td><td>GEOBLUE BRASIL SOLUCOES AMBIENTAIS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>26/09/2025</td><td>OS_INT_0271_2025</td><td>LUCAS BRANDALISE DE OLIVEIRA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>26/09/2025</td><td>SUB_INT_0055_2023</td><td>RGP ENGENHARIA DE SEGURANCA E MEDICINA OCUPACIONAL LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-red"><td>29/09/2025</td><td>SUB_INT_0173_2024</td><td>TEOR DIVISORIAS SANITARIAS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>30/09/2025</td><td>OS_INT_0297_2025</td><td>ENERG GERADORES SERVICOS E ENGENHARIA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>30/09/2025</td><td>SUB_INT_0009_2023</td><td>AVOX TELECOMUNICACOES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>02/10/2025</td><td>OS_INT_0272_2025</td><td>DINFER ESQUADRIAS METALICAS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>02/10/2025</td><td>OS_INT_0273_2025</td><td>SERRALHERIA CUERCI LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>06/10/2025</td><td>SUB_INT_0093_2024</td><td>PREMOLDADOS PROTENDIT LTDA</td><td>ENCERRADO</td><td>06/10/2025</td></tr><tr class="row-red"><td>06/10/2025</td><td>SUB_INT_0148_2024</td><td>BVQI DO BRASIL SOCIEDADE CERTIFICADORA LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>07/10/2025</td><td>SUB_INT_0176_2024</td><td>ELIMAX COMERCIO E SERVICOS EM ARTE CENICA LTDA</td><td>ENCERRADO</td><td>22/01/2026</td></tr><tr class="row-green"><td>08/10/2025</td><td>OS_INT_0275_2025</td><td>AG - LOCACAO DE MAQUINAS E EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>08/10/2025</td><td>SUB_INT_0018_2023</td><td>I9 ENGENHARIA E CONSTRUCAO LTDA</td><td>ENCERRADO</td><td>08/10/2025</td></tr><tr class="row-green"><td>08/10/2025</td><td>SUB_INT_0059_2023</td><td>I9 ENGENHARIA E CONSTRUCAO LTDA</td><td>ENCERRADO</td><td>08/10/2025</td></tr><tr class="row-green"><td>10/10/2025</td><td>SUB_INT_0179_2024</td><td>LANDIN CONSTRCOES E REFORMAS LTDA</td><td>EM ENCERRAMENTO</td><td>16/07/2025</td></tr><tr class="row-green"><td>10/10/2025</td><td>SUB_INT_0152_2024</td><td>AA SPINDOLA DIVISORIAS LTDA</td><td>ENCERRADO</td><td>10/10/2025</td></tr><tr class="row-green"><td>14/10/2025</td><td>SUB_INT_0181_2024</td><td>ALABASTRO CONSTRUCOES E TERRAPLANAGEM LTDA</td><td>EM ANDAMENTO</td><td>12/12/2025</td></tr><tr class="row-green"><td>14/10/2025</td><td>SUB_INT_0182_2024</td><td>MAKER ENGENHARIA COMERCIO E SERVICOS DE ISOLANTES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>15/10/2025</td><td>SUB_INT_0013_2023</td><td>BRAIN TECNOLOGIA COMERCIO E SERVICOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>15/10/2025</td><td>SUB_INT_0110_2024</td><td>AUTODOC PROCESSAMENTO DE DADOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>15/10/2025</td><td>SUB_INT_0131_2024</td><td>MOBICLOUD TECNOLOGIA E INFORMATICA S.A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>16/10/2025</td><td>SUB_INT_0183_2024</td><td>3FS MONTAGENS COMERCIO E LOCACAO DE EQUIPAMENTOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>21/10/2025</td><td>SUB_INT_0157_2024</td><td>CRESCENTO CONSULTORIA FINANCEIRA LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>21/10/2025</td><td>SUB_INT_0121_2024</td><td>PISO SAO PAULO CONCRETO POLIDO LTDA</td><td>ENCERRADO</td><td>13/01/2026</td></tr><tr class="row-red"><td>24/10/2025</td><td>SUB_INT_0184_2024</td><td>AGUAMAR TRANSPORTES LTDA.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>25/10/2025</td><td>SUB_INT_0125_2024</td><td>JSP PISOS LTDA</td><td>EM ANDAMENTO</td><td>10/12/2025</td></tr><tr class="row-green"><td>27/10/2025</td><td>SUB_INT_0185_2024</td><td>ZUMBIATAM ENGENHARIA E SERVICOS LTDA</td><td>EM ANDAMENTO</td><td>09/07/2025</td></tr><tr class="row-red"><td>29/10/2025</td><td>SUB_INT_0124_2024</td><td>ROCMA SERVICOS DE MANUTENCAO E REPARACAO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>29/10/2025</td><td>SUB_INT_0163_2024</td><td>OLIVERBRISE COMERCIO E SERVICOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>30/10/2025</td><td>OS_INT_0212_2024</td><td>PILAR SERVICOS TECNICOS EM EDIFICACOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>30/10/2025</td><td>SUB_INT_0186_2024</td><td>GRADISA SOLUCOES EM FERRO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>03/11/2025</td><td>SUB_INT_0187_2024</td><td>C&amp;S FACILITIES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>04/11/2025</td><td>OS_INT_0293_2025</td><td>IDEAL LOCACOES E MONTAGENS DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>05/11/2025</td><td>SUB_INT_0211_2025</td><td>AB&amp;D CONSTRUCOES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>11/11/2025</td><td>SUB_INT_0191_2024</td><td>PERSIPISOS - DECORACOES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>13/11/2025</td><td>SUB_INT_0192_2024</td><td>ISAR ENGENHARIA, CONSTRUCOES E MONTAGENS LTDA</td><td>ENCERRADO</td><td>03/07/2025</td></tr><tr class="row-green"><td>15/11/2025</td><td>OS_INT_0157_2024</td><td>JGR ENERGIA SOLAR LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/11/2025</td><td>OS_INT_0193_2024</td><td>PRIME PREVENCAO CONTRA INCENDIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/11/2025</td><td>OS_INT_0282_2025</td><td>IDEAL LOCACOES E MONTAGENS DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/11/2025</td><td>SUB_INT_0111_2024</td><td>VB ARQUITETURA E PROJETOS ESPECIAIS LTDA</td><td>ENCERRADO</td><td>25/11/2025</td></tr><tr class="row-green"><td>21/11/2025</td><td>SUB_INT_0193_2024</td><td>LB &amp; C ENGENHARIA LTDA</td><td>ENCERRADO</td><td>25/09/2025</td></tr><tr class="row-green"><td>21/11/2025</td><td>SUB_INT_0194_2024</td><td>JCT ENGENHARIA &amp; PAVIMENTACAO SLU LTDA</td><td>ENCERRADO</td><td>04/12/2025</td></tr><tr class="row-green"><td>24/11/2025</td><td>SUB_INT_0195_2024</td><td>ZELO ASSESSORIA PORTARIA E LIMPEZA LTDA</td><td>ENCERRADO</td><td>06/02/2026</td></tr><tr class="row-green"><td>26/11/2025</td><td>SUB_INT_0198_2024</td><td>KAIROS SOLUCOES CONSTRUTIVAS LTDA</td><td>ENCERRADO</td><td>20/01/2026</td></tr><tr class="row-green"><td>27/11/2025</td><td>OS_INT_0283_2025</td><td>PRO FIX CONSTRUCAO E TRATAMENTO DE AGUA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>27/11/2025</td><td>SUB_INT_0201_2024</td><td>FLBC TERRAPLENAGEM E CONSTRUCOES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>28/11/2025</td><td>SUB_INT_0203_2024</td><td>PINTURAS PAULISTA RESTAURACAO E PINTURA PREDIAL LTDA</td><td>ENCERRADO</td><td>15/07/2025</td></tr><tr class="row-red"><td>01/12/2025</td><td>SUB_INT_0033_2023</td><td>TMB COMERCIO E SERVICOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>01/12/2025</td><td>SUB_INT_0071_2023</td><td>H C SERAFIM TRANSPORTES E LOCACOES</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-green"><td>01/12/2025</td><td>SUB_INT_0165_2024</td><td>VEGASOLAR ENERGIA SERVICOS LTDA</td><td>ENCERRADO</td><td>29/05/2026</td></tr><tr class="row-green"><td>03/12/2025</td><td>SUB_INT_0204_2024</td><td>PINTURAS PAULISTA RESTAURACAO E PINTURA PREDIAL LTDA</td><td>ENCERRADO</td><td>15/07/2025</td></tr><tr class="row-green"><td>05/12/2025</td><td>SUB_INT_0137_2024</td><td>IM GESSO PINTURA E REFORMAS EM GERAL LTDA</td><td>ENCERRADO</td><td>15/07/2025</td></tr><tr class="row-green"><td>07/12/2025</td><td>OS_INT_0305_2025</td><td>COLAR INDUSTRIA E COMERCIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>08/12/2025</td><td>OS_INT_0295_2025</td><td>ACQUABRASILIS MEIO AMBIENTE LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>09/12/2025</td><td>SUB_INT_0082_2024</td><td>AGILIS LOCACOES DE EQUIPAMENTOS PARA TERRAPLENAGEM LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>10/12/2025</td><td>OS_INT_0286_2025</td><td>TRANSPORTE DE AGUA TOZO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>11/12/2025</td><td>SUB_INT_0139_2024</td><td>C P DIAS PORTE PINTURAS</td><td>EM ENCERRAMENTO</td><td>16/01/2026</td></tr><tr class="row-green"><td>12/12/2025</td><td>OS_INT_0155_2024</td><td>HIGIENIZACAO SAO PAULO COMERCIO E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>15/12/2025</td><td>OS_INT_0304_2025</td><td>COMERCIAL ROSALLES COMERCIO DE MATERIAIS DE CONSTRUCAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/12/2025</td><td>OS_INT_0287_2025</td><td>DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/12/2025</td><td>OS_INT_0288_2025</td><td>TECNOGERA - LOCACAO E TRANSFORMACAO DE ENERGIA SA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>16/12/2025</td><td>SUB_INT_0158_2024</td><td>STAGNUM CONSTRUCAO E COMERCIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>19/12/2025</td><td>SUB_INT_0020_2023</td><td>ALANO TERRAPLENAGEM E LOCADORA DE MAQUINAS LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-green"><td>20/12/2025</td><td>OS_INT_0277_2025</td><td>TRANSPORTES JOSE VERONEZI EIRELI</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>21/12/2025</td><td>OS_INT_0307_2025</td><td>J L FERREIRA COMERCIO E SERVICOS DE TELAS</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>23/12/2025</td><td>SUB_INT_0133_2024</td><td>JG VIEIRA AR CONDICIONADO, REFRIGERACAO E MANUTENCAO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>24/12/2025</td><td>OS_INT_0289_2025</td><td>LOXAM DO BRASIL SA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>24/12/2025</td><td>SUB_INT_0153_2024</td><td>ELEGANCY COM. DE FORROS DIVISORIAS PISOS E GESSO LTDA.</td><td>EM ENCERRAMENTO</td><td>20/10/2025</td></tr><tr class="row-green"><td>25/12/2025</td><td>SUB_INT_0207_2024</td><td>COSTA CONSTRUCOES</td><td>ENCERRADO</td><td>03/10/2025</td></tr><tr class="row-green"><td>27/12/2025</td><td>OS_INT_0294_2025</td><td>DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>27/12/2025</td><td>SUB_INT_0022_2023</td><td>INDUSLOC COMERCIO E LOCACAO DE MAQUINAS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>31/12/2025</td><td>SUB_INT_0031_2023</td><td>PTA LOCACOES DE EQUIPAMENTOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>31/12/2025</td><td>SUB_INT_0169_2024</td><td>CONCRESERV SUDESTE S/A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>01/01/2026</td><td>OS_INT_0285_2025</td><td>TRANSPORTES JOSE VERONEZI EIRELI</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>01/01/2026</td><td>SUB_INT_0003_2023</td><td>PESSOA FERRAZ ENGENHARIA LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>01/01/2026</td><td>SUB_INT_0085_2024</td><td>SIMITO SISTEMAS DE SEGURANCA E MONITORAMENTO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>05/01/2026</td><td>SUB_INT_0210_2025</td><td>GREEN VERDE PARA O MEIO AMBIENTE LTDA</td><td>ENCERRADO</td><td>01/06/2026</td></tr><tr class="row-green"><td>06/01/2026</td><td>OS_INT_0290_2025</td><td>SANICLEAN LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>09/01/2026</td><td>SUB_INT_0083_2024</td><td>ALMAX COMERCIO E LOCACAO DE MAQUINAS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>10/01/2026</td><td>OS_INT_0306_2025</td><td>WILTON BERTRANDO SOUZA SILVA MONTADORA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>15/01/2026</td><td>SUB_INT_0086_2024</td><td>THORIO LOCACAO DE GERADORES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>15/01/2026</td><td>SUB_INT_0151_2024</td><td>KYP COMERCIO DE EQUIPAMENTOS PARA PISCINAS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>15/01/2026</td><td>SUB_INT_0180_2024</td><td>ELEVA BRASIL SOLUCOES EM ELEVACAO SA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>25/01/2026</td><td>OS_INT_0292_2025</td><td>COLAR INDUSTRIA E COMERCIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/01/2026</td><td>OS_INT_0296_2025</td><td>COLAR INDUSTRIA E COMERCIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>25/01/2026</td><td>SUB_INT_0154_2024</td><td>L.A. FALCAO BAUER CENTRO TECNOLOGICO DE CONTROLE DA QUALIDADE LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>27/01/2026</td><td>OS_INT_0291_2025</td><td>STONEFLEX COMÉRCIO E INSTALAÇÃO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>27/01/2026</td><td>SUB_INT_0214_2025</td><td>BETTER ENGENHARIA E SERVICOS LTDA</td><td>ENCERRADO</td><td>18/07/2025</td></tr><tr class="row-red"><td>28/01/2026</td><td>SUB_INT_0213_2025</td><td>FORTHLUX COMUNICACAO VISUAL LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-red"><td>31/01/2026</td><td>SUB_INT_0150_2024</td><td>VOTORANTIM CIMENTOS S.A.</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>05/02/2026</td><td>OS_INT_0256_2025</td><td>CZLOC LOCACAO DE EQUIPAMENTOS PARA CONSTRUCAO CIVIL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>06/02/2026</td><td>SUB_INT_0094_2024</td><td>ON EMPREITEIRA DA CONSTRUCAO CIVIL LTDA</td><td>ENCERRADO</td><td>14/01/2026</td></tr><tr class="row-red"><td>13/02/2026</td><td>SUB_INT_0216_2025</td><td>ANDREA CAMPOS MARTINS</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-red"><td>17/02/2026</td><td>SUB_INT_0215_2025</td><td>PROTEXFIRE EQUIPAMENTOS DE SEGURANCA E COMBATE A INCENDIO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>17/02/2026</td><td>SUB_INT_0217_2025</td><td>LIGHTWALL SAO PAULO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>23/02/2026</td><td>SUB_INT_0099_2024</td><td>FM COMERCIO E SERVICOS DE ESTRUTURAS METALICAS LTDA</td><td>EM ANDAMENTO</td><td>15/12/2025</td></tr><tr class="row-green"><td>24/02/2026</td><td>OS_INT_0300_2025</td><td>SANICLEAN LOCACAO DE EQUIPAMENTOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/02/2026</td><td>OS_INT_0265_2025</td><td>DINFER ESQUADRIAS METALICAS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/02/2026</td><td>SUB_INT_0162_2024</td><td>JB2R CONSTRUCOES, SERVICOS E PARTICIPACOES LTDA</td><td>EM ENCERRAMENTO</td><td>20/01/2026</td></tr><tr class="row-green"><td>07/03/2026</td><td>OS_INT_0302_2025</td><td>7 Ondas Transportes LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>08/03/2026</td><td>OS_INT_0301_2025</td><td>CINETELAS INDUSTRIA E COMERCIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>10/03/2026</td><td>OS_INT_0233_2024</td><td>DINFER ESQUADRIAS METALICAS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>10/03/2026</td><td>OS_INT_0245_2025</td><td>DINFER ESQUADRIAS METALICAS LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>14/03/2026</td><td>OS_INT_0303_2025</td><td>DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>14/03/2026</td><td>SUB_INT_0077_2023</td><td>PLANEM ENGENHARIA E ELETRICIDADE LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>17/03/2026</td><td>OS_INT_0308_2025</td><td>JHNADOUR COMERCIO E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>18/03/2026</td><td>SUB_INT_0220_2025</td><td>DALUTH ENGENHARIA</td><td>ENCERRADO</td><td>25/02/2026</td></tr><tr class="row-red"><td>18/03/2026</td><td>SUB_INT_0219_2025</td><td>Ax3 Esportes Nj Instalacoes Esportivas LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>19/03/2026</td><td>SUB_INT_0108_2024</td><td>GRADEMAXX INDUSTRIA E COMERCIO DE GRADES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>19/03/2026</td><td>SUB_INT_0164_2024</td><td>VELA SOFTWARE E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/03/2026</td><td>SUB_INT_0221_2025</td><td>MM EMPREITEIRA DE MAO DE OBRA E MATERIAIS LTDA</td><td>EM ENCERRAMENTO</td><td>21/01/2026</td></tr><tr class="row-red"><td>22/03/2026</td><td>SUB_INT_0212_2025</td><td>SOLUTOLDOS BRASIL LTDA</td><td>EM ENCERRAMENTO</td><td>—</td></tr><tr class="row-red"><td>31/03/2026</td><td>SUB_INT_0115_2024</td><td>VIBES SOLUCOES E ENGENHARIA LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>01/04/2026</td><td>SUB_INT_0223_2025</td><td>J A CONSTRUCAO LTDA</td><td>ENCERRADO</td><td>21/01/2026</td></tr><tr class="row-red"><td>01/04/2026</td><td>SUB_INT_0222_2025</td><td>VB ARQUITETURA E PROJETOS ESPECIAIS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>02/04/2026</td><td>SUB_INT_0224_2025</td><td>AA SPINDOLA DIVISORIAS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>04/04/2026</td><td>SUB_INT_0117_2024</td><td>CB PROJETOS E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>20/04/2026</td><td>OS_INT_0281_2025</td><td>ACQUAGAMA INSTALACOES E SERVICOS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>20/04/2026</td><td>SUB_INT_0096_2024</td><td>ACQUABETA SOLUCOES EM EQUIPAMENTOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>26/04/2026</td><td>OS_INT_0151_2024</td><td>CZLOC LOCACAO DE EQUIPAMENTOS PARA CONSTRUCAO CIVIL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/04/2026</td><td>OS_INT_0279_2025</td><td>METROFORM SYSTEM TEC EM EQUIP P CONST LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>28/04/2026</td><td>SUB_INT_0126_2024</td><td>LUCHE TECNOLOGIA EM INSTALACOES ELETRICAS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>28/04/2026</td><td>SUB_INT_0225_2025</td><td>NOVA UNIAO FUNDACOES LTDA</td><td>ENCERRADO</td><td>27/01/2026</td></tr><tr class="row-red"><td>29/04/2026</td><td>SUB_INT_0226_2025</td><td>EDMILSON SEVERINO PEREIRA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>16/05/2026</td><td>SUB_INT_0010_2023</td><td>QUALLY SABOR LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>17/05/2026</td><td>OS_INT_0228_2024</td><td>PRO FIX CONSTRUCAO E TRATAMENTO DE AGUA LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>19/05/2026</td><td>SUB_INT_0227_2025</td><td>MAYA ENGENHARIA E CONSTRUCOES LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>26/05/2026</td><td>SUB_INT_0228_2025</td><td>B&amp;R SERVICOS DE MANUTENCAO E REPARACAO PATRIMONIAL LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>28/05/2026</td><td>SUB_INT_0015_2023</td><td>ZELO ASSESSORIA PORTARIA E LIMPEZA LTDA</td><td>ENCERRADO</td><td>28/01/2026</td></tr><tr class="row-red"><td>28/05/2026</td><td>SUB_INT_0229_2025</td><td>LB &amp; C ENGENHARIA LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-red"><td>03/06/2026</td><td>SUB_INT_0230_2025</td><td>LIEMI SERVICOS DE ENGENHARIA LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>12/06/2026</td><td>OS_INT_0309_2025</td><td>LUCAS BRANDALISE DE OLIVEIRA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>12/06/2026</td><td>SUB_INT_0030_2023</td><td>ITATERRA TRANSPORTES LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>13/06/2026</td><td>SUB_INT_0231_2025</td><td>ISAR ENGENHARIA, CONSTRUCOES E MONTAGENS LTDA</td><td>ENCERRADO</td><td>22/01/2026</td></tr><tr class="row-green"><td>17/06/2026</td><td>SUB_INT_0140_2024</td><td>STAGNUM CONSTRUCAO E COMERCIO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-red"><td>28/06/2026</td><td>SUB_INT_0145_2024</td><td>CLEARVENT LUZ NATURAL COMERCIO DE VENEZIANAS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>30/06/2026</td><td>SUB_INT_0147_2024</td><td>D.I.V PRODUTOS E SERVICOS HOSPITALARES LTDA</td><td>ENCERRADO</td><td>17/12/2025</td></tr><tr><td>15/07/2026</td><td>SUB_INT_0149_2024</td><td>PRONTO IT TECNOLOGIA EM SERVICOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr><td>20/07/2026</td><td>SUB_INT_0233_2025</td><td>FABRICA DE TOLDO LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr><td>30/07/2026</td><td>SUB_INT_0156_2024</td><td>JGR ENERGIA SOLAR LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr><td>01/08/2026</td><td>SUB_INT_0232_2025</td><td>ENGETELA COMERCIO E SERVICOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr><td>06/08/2026</td><td>SUB_INT_0051_2023</td><td>VIEIRA E MARQUES SERVICOS DE INFORMATICA LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr class="row-green"><td>22/08/2026</td><td>OS_INT_0299_2025</td><td>FORMULAGROUP PUBLICIDADE E COMUNICACAO LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>25/08/2026</td><td>SUB_INT_0234_2025</td><td>INFORMÓBILE INDÚSTRIA E COMÉRCIO DE MÓVEIS LTDA</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>26/08/2026</td><td>OS_INT_0284_2025</td><td>DNA DISTRIBUIDORA NACIONAL DE ANDAIMES LTDA.</td><td>ENCERRADO</td><td>—</td></tr><tr class="row-green"><td>19/09/2026</td><td>SUB_INT_0172_2024</td><td>OR7 CONSTRUCOES E SERVICOS LTDA</td><td>ENCERRADO</td><td>27/01/2025</td></tr><tr class="row-green"><td>24/09/2026</td><td>OS_INT_0270_2025</td><td>WILTON BERTRANDO SOUZA SILVA MONTADORA</td><td>ENCERRADO</td><td>—</td></tr><tr><td>08/11/2026</td><td>SUB_INT_0190_2024</td><td>ALFAMAX LOCADORA LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr><tr><td>24/11/2026</td><td>SUB_INT_0196_2024</td><td>FOX GESTAO EM SERVICOS LTDA</td><td>EM ANDAMENTO</td><td>—</td></tr></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="empty" id="caucoes-empty" style="display: none;">
+      <b>Nenhum dado carregado ainda</b>
+      Carregue a planilha de Contratos Lote 1 para ver o painel de Cauções.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+
+/* ---------- helpers ---------- */
+function norm(s){
+  return (s===null||s===undefined?'':String(s))
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ').trim().toLowerCase();
+}
+function isFilled(v){
+  if(v===null||v===undefined) return false;
+  if(v instanceof Date) return !isNaN(v);
+  if(typeof v==='number') return true;
+  const t=String(v).trim().toUpperCase();
+  if(t===''||t==='#VALUE!') return false;
+  return true;
+}
+function fmtDate(v){
+  if(v instanceof Date && !isNaN(v)) return v.toLocaleDateString('pt-BR');
+  return v===null||v===undefined?'':String(v);
+}
+function monthKey(v){
+  if(v instanceof Date && !isNaN(v)) return v.getFullYear()+'-'+String(v.getMonth()+1).padStart(2,'0');
+  return null;
+}
+function monthLabel(key){
+  if(!key) return '—';
+  const [y,m]=key.split('-');
+  const meses=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return meses[parseInt(m,10)-1]+'/'+y.slice(2);
+}
+function findHeaderRow(rows, mustHave){
+  for(let i=0;i<rows.length;i++){
+    const cells=(rows[i]||[]).map(norm);
+    if(mustHave.every(req=>cells.some(c=>req.every(k=>c.includes(k))))) return i;
+  }
+  return -1;
+}
+function colIndex(headerRow, keywords){
+  for(let i=0;i<headerRow.length;i++){
+    const c=norm(headerRow[i]);
+    if(keywords.every(k=>c.includes(k))) return i;
+  }
+  return -1;
+}
+function nowStamp(){
+  return new Date().toLocaleString('pt-BR');
+}
+function daysBetween(a,b){
+  return Math.floor((b-a)/(1000*60*60*24));
+}
+
+function setKpi(id, value, pct){
+  const card = document.getElementById(id);
+  card.querySelector('.num').textContent = value;
+  const fill = card.querySelector('.kpi-fill');
+  if(fill){ fill.style.width = Math.min(pct,100)+'%'; }
+  const pctLabel = card.querySelector('.kpi-pct');
+  if(pctLabel){ pctLabel.textContent = pct+'%'; }
+}
+
+/* ---------- state ---------- */
+let medicoesRows = [];
+let medicoesCols = {};
+let currentSegment = 'todos';
+let respFilter = 'todos';
+let pizzaFilterPhase = null;
+let pizzaChart=null, barChart=null;
+
+const PHASES = [
+  {key:'envio_obra', label:'Envio à Obra', match:['envio','espelho','obra']},
+  {key:'aprov_obra', label:'Aprovação da Obra', match:['aprovacao','espelho','obra']},
+  {key:'lanc_uau', label:'Lançamento UAU', match:['lancamento','uau','realizado']},
+  {key:'aprov_uau', label:'Aprovação UAU', match:['aprovacao','uau','realizado']},
+  {key:'lib_bm', label:'Liberação BM', match:['liberacao','realizado']},
+  {key:'receb_nf', label:'Recebimento NF', match:['recebimento','nf','realizado']},
+  {key:'envio_fin', label:'Envio ao Financeiro', match:['envio','financ','realizado']},
+];
+
+/* ---------- XLSX parsing: medições ---------- */
+function parseMedicoes(workbook){
+  const sheetName = workbook.SheetNames.find(n=>norm(n).includes('cronograma')) || workbook.SheetNames[0];
+  const ws = workbook.Sheets[sheetName];
+  const rows    = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, cellDates:true, defval:null});
+  const rowsRaw = XLSX.utils.sheet_to_json(ws, {header:1, raw:true,  cellDates:true, defval:null});
+
+  // encontra header: linha que tem "fornecedor" E alguma coluna com "espelho"
+  let hIdx = -1;
+  for(let i=0;i<rows.length;i++){
+    const cells = (rows[i]||[]).map(c=>norm(String(c||'')));
+    if(cells.some(c=>c==='fornecedor') && cells.some(c=>c.includes('espelho'))){ hIdx=i; break; }
+  }
+  if(hIdx===-1) throw new Error('Não encontrei a linha de cabeçalho na aba de cronograma. Verifique se o arquivo é o esperado.');
+  const header = rows[hIdx];
+
+  function col(keywords){
+    for(let i=0;i<header.length;i++){
+      const c=norm(String(header[i]||''));
+      if(keywords.every(k=>c.includes(k))) return i;
+    }
+    return -1;
+  }
+
+  const c = {
+    fornecedor:       col(['fornecedor']),
+    mes:              col(['mes']),
+    setor:            col(['setor']),
+    contrato:         col(['cod','contrato']),
+    statusMed:        col(['status','medic']),
+    resp:             col(['resp']),
+    espelhoRealizado: col(['espelho','realizado']),
+    envioObra:        col(['envio','espelho','obra']),
+    aprovObra:        col(['aprovacao','espelho','obra']),
+    lancUauReal:      col(['lancamento','uau','realizado']),
+    aprovUauReal:     col(['aprovacao','uau','realizado']),
+    libBmReal:        col(['liberacao','bm','realizado']),
+    recebNfReal:      col(['recebimento','nf','realizado']),
+    envioFinReal:     col(['envio','financ','realizado']),
+  };
+  medicoesCols = c;
+
+  const data = [];
+  for(let i=hIdx+1;i<rows.length;i++){
+    const r    = rows[i];
+    const rRaw = rowsRaw[i];
+    if(!r || c.fornecedor===-1 || !isFilled(r[c.fornecedor])) continue;
+
+    // monthKey robusto: tenta Date object, número serial Excel, ou string
+    let mk = null;
+    if(rRaw && c.mes>-1){
+      const rawMes = rRaw[c.mes];
+      if(rawMes instanceof Date && !isNaN(rawMes)){
+        mk = rawMes.getFullYear()+'-'+String(rawMes.getMonth()+1).padStart(2,'0');
+      } else if(typeof rawMes==='number' && rawMes>0){
+        const d = new Date(Math.round((rawMes-25569)*86400*1000));
+        if(!isNaN(d)) mk = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      } else if(rawMes){
+        const d = new Date(rawMes);
+        if(!isNaN(d)) mk = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      }
+    }
+
+    data.push({
+      fornecedor:       r[c.fornecedor],
+      mes:              c.mes>-1?       r[c.mes]       : null,
+      mesKey:           mk,
+      setor:            c.setor>-1?     r[c.setor]     : '',
+      contrato:         c.contrato>-1?  r[c.contrato]  : '',
+      statusMed:        c.statusMed>-1? r[c.statusMed] : '',
+      resp:             c.resp>-1?      String(r[c.resp]||'').trim() : '',
+      espelhoRealizado: isFilled(r[c.espelhoRealizado]),
+      envioObra:        isFilled(r[c.envioObra]),
+      aprovObra:        isFilled(r[c.aprovObra]),
+      lancUauReal:      isFilled(r[c.lancUauReal]),
+      aprovUauReal:     isFilled(r[c.aprovUauReal]),
+      libBmReal:        isFilled(r[c.libBmReal]),
+      recebNfReal:      isFilled(r[c.recebNfReal]),
+      envioFinReal:     isFilled(r[c.envioFinReal]),
+    });
+  }
+  return data;
+}
+
+// Retorna as fases "efetivas" de uma medição:
+// - Se uma fase posterior está preenchida, considera as anteriores como concluídas
+// - Aprovação UAU (índice 3): acende se explicitamente preenchida OU se envioFinReal estiver preenchido
+function effectivePhases(row){
+  const raw = [row.envioObra, row.aprovObra, row.lancUauReal, row.aprovUauReal, row.libBmReal, row.recebNfReal, row.envioFinReal];
+  const APROV_UAU_IDX = 3;
+
+  // aprovUAU é considerada concluída se: preenchida na planilha OU envioFin preenchido
+  const aprovUauEff = row.aprovUauReal || row.envioFinReal || false;
+
+  // array com aprovUAU já resolvida
+  const resolved = raw.map((v,i)=> i===APROV_UAU_IDX ? aprovUauEff : v);
+
+  // descobre o índice mais avançado preenchido
+  let lastFilled = -1;
+  for(let i=0;i<resolved.length;i++){ if(resolved[i]) lastFilled=i; }
+
+  // preenche automaticamente tudo antes de lastFilled
+  return resolved.map((v,i)=> i<lastFilled ? true : v);
+}
+
+function currentPhaseOf(row){
+  const eff = effectivePhases(row);
+  for(let i=0;i<eff.length;i++){ if(!eff[i]) return PHASES[i]; }
+  return null; // tudo concluído
+}
+
+/* ---------- render: medições ---------- */
+function thisMonthKey(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+
+function applyResp(rows){
+  if(respFilter === 'todos') return rows;
+  return rows.filter(r=>norm(r.resp).includes(norm(respFilter)));
+}
+
+function applySegment(rows){
+  const cur = thisMonthKey();
+  let result = rows;
+  if(currentSegment==='atrasados') result = result.filter(r=>r.espelhoRealizado && !r.envioFinReal && r.mesKey && r.mesKey<cur);
+  else if(currentSegment==='mesatual') result = result.filter(r=>r.mesKey===cur);
+  return result;
+}
+
+function renderMedicoes(){
+  const cur = thisMonthKey();
+  document.getElementById('medicoes-empty').style.display = medicoesRows.length? 'none':'block';
+  document.getElementById('medicoes-content').style.display = medicoesRows.length? 'block':'none';
+  if(!medicoesRows.length) return;
+
+  // aplica filtro de resp como base de tudo
+  const filtered = applyResp(medicoesRows);
+
+  const recebidasMes = filtered.filter(r=>r.espelhoRealizado && r.mesKey===cur).length;
+  const andamento = filtered.filter(r=>r.espelhoRealizado && !r.envioFinReal);
+  const andamentoMes = andamento.filter(r=>r.mesKey===cur);
+  const atrasadas = andamento.filter(r=>r.mesKey && r.mesKey<cur);
+
+  const doMesTotal = filtered.filter(r=>r.mesKey===cur).length;
+  setKpi('kpi-recebidas', recebidasMes, doMesTotal? Math.round(100*recebidasMes/doMesTotal):0);
+  setKpi('kpi-andamento', andamento.length, filtered.length? Math.round(100*andamento.length/filtered.length):0);
+  setKpi('kpi-andamento-mes', andamentoMes.length, andamento.length? Math.round(100*andamentoMes.length/andamento.length):0);
+  setKpi('kpi-atrasadas', atrasadas.length, andamento.length? Math.round(100*atrasadas.length/andamento.length):0);
+
+  // % conclusão: aplica resp
+  const emAndamentoGeral = filtered.filter(r=>r.espelhoRealizado && !r.envioFinReal && r.mesKey && r.mesKey<=cur);
+  const concluidasGeral = filtered.filter(r=>r.espelhoRealizado && r.envioFinReal && r.mesKey && r.mesKey<=cur);
+  const totalBase = emAndamentoGeral.length + concluidasGeral.length;
+  const pct = totalBase? Math.round(100*concluidasGeral.length/totalBase) : 0;
+  document.getElementById('bar-conclusao').style.width = pct+'%';
+  document.getElementById('bar-conclusao-label').textContent = pct+'%';
+  document.getElementById('bar-conclusao-foot').textContent = `${concluidasGeral.length} concluídas de ${totalBase} em andamento (mês atual + atrasados).`;
+
+  // pizza — aplica segmento sobre a base já filtrada por resp
+  const base = applySegment(andamento);
+  const counts = {};
+  PHASES.forEach(p=>counts[p.key]=0);
+  base.forEach(r=>{ const ph=currentPhaseOf(r); if(ph) counts[ph.key]++; });
+
+  const colors = ['#2C5C82','#3E7EA8','#5A9AC0','#D9722B','#E89352','#C24A3B','#8A8F94'];
+  const ctx = document.getElementById('chart-pizza').getContext('2d');
+  if(pizzaChart) pizzaChart.destroy();
+  pizzaChart = new Chart(ctx,{
+    type:'doughnut',
+    data:{ labels:PHASES.map(p=>p.label), datasets:[{ data:PHASES.map(p=>counts[p.key]), backgroundColor:colors, borderColor:'#fff', borderWidth:2 }] },
+    options:{
+      plugins:{ legend:{ position:'bottom', labels:{ font:{family:"'Inter',sans-serif", size:10.5}, boxWidth:10 } } },
+      onClick:(evt, els)=>{
+        if(els.length){
+          const idx = els[0].index;
+          const key = PHASES[idx].key;
+          pizzaFilterPhase = (pizzaFilterPhase===key)? null : key;
+          // filtra toda a aba
+          renderLista(base);
+          renderFornecedorSelect(base);
+          // limpa régua se fornecedor selecionado sumiu do filtro
+          const sel = document.getElementById('select-fornecedor');
+          if(sel.value && !Array.from(sel.options).some(o=>o.value===sel.value)){
+            sel.value='';
+            document.getElementById('fornecedor-ruler').innerHTML='';
+          }
+        }
+      }
+    }
+  });
+
+  renderLista(base);
+  renderFornecedorSelect(base);
+}
+
+function renderLista(baseAndamento){
+  const tbody = document.querySelector('#tabela-medicoes tbody');
+  tbody.innerHTML='';
+  let rows = baseAndamento;
+  let label = '';
+  if(pizzaFilterPhase){
+    rows = rows.filter(r=>{ const ph=currentPhaseOf(r); return ph && ph.key===pizzaFilterPhase; });
+    label = '— filtrado por: ' + PHASES.find(p=>p.key===pizzaFilterPhase).label;
+  }
+  document.getElementById('lista-filtro-label').textContent = label;
+  rows.slice(0,300).forEach(r=>{
+    const ph = currentPhaseOf(r);
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${r.fornecedor||''}</td><td>${monthLabel(r.mesKey)}</td><td>${r.setor||''}</td><td>${r.contrato||''}</td><td>${ph? ph.label : 'Concluída'}</td><td>${r.statusMed||''}</td>`;
+    tbody.appendChild(tr);
+  });
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:20px;">Nenhuma medição nesse filtro.</td></tr>';
+  }
+}
+
+function renderFornecedorSelect(base){
+  const sel = document.getElementById('select-fornecedor');
+  const cur = thisMonthKey();
+  let source = base || medicoesRows.filter(r=>r.espelhoRealizado && !r.envioFinReal && r.mesKey && r.mesKey<=cur);
+  if(pizzaFilterPhase){
+    source = source.filter(r=>{ const ph=currentPhaseOf(r); return ph && ph.key===pizzaFilterPhase; });
+  }
+
+  // conta quantas medições em andamento cada fornecedor tem
+  const countPerFornecedor = {};
+  source.forEach(r=>{
+    countPerFornecedor[r.fornecedor] = (countPerFornecedor[r.fornecedor]||0)+1;
+  });
+
+  // gera entradas únicas: se >1 medição, adiciona o mês; senão, só o nome
+  const entries = source.map(r=>{
+    const label = countPerFornecedor[r.fornecedor] > 1
+      ? `${r.fornecedor} (${monthLabel(r.mesKey)})`
+      : r.fornecedor;
+    return { label, fornecedor: r.fornecedor, mesKey: r.mesKey };
+  });
+
+  // dedup por label
+  const seen = new Set();
+  const unique = entries.filter(e=>{ if(seen.has(e.label)) return false; seen.add(e.label); return true; });
+  unique.sort((a,b)=>a.label.localeCompare(b.label));
+
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Selecione um fornecedor…</option>'
+    + unique.map(e=>`<option value="${e.fornecedor}||${e.mesKey}">${e.label}</option>`).join('');
+  if(prev && Array.from(sel.options).some(o=>o.value===prev)) sel.value = prev;
+}
+
+function renderFornecedorRuler(val){
+  const div = document.getElementById('fornecedor-ruler');
+  if(!val){ div.innerHTML=''; return; }
+  const [nome, mesKey] = val.split('||');
+  const row = medicoesRows.find(r=>r.fornecedor===nome && r.mesKey===mesKey && r.espelhoRealizado);
+  if(!row){ div.innerHTML=''; return; }
+  const eff = effectivePhases(row);
+  const steps = [
+    {l:'Espelho',    v:row.espelhoRealizado},
+    {l:'Envio Obra', v:eff[0]},
+    {l:'Aprov. Obra',v:eff[1]},
+    {l:'Lanç. UAU',  v:eff[2]},
+    {l:'Aprov. UAU', v:eff[3]},
+    {l:'BM',         v:eff[4]},
+    {l:'NF',         v:eff[5]},
+    {l:'Financeiro', v:eff[6]},
+  ];
+  div.innerHTML = `
+    <div class="ruler">${steps.map((s,i)=>`<div class="seg-block ${s.v?'lit':''} ${i===steps.length-1&&s.v?'last':''}"></div>`).join('')}</div>
+    <div class="ruler-labels">${steps.map(s=>`<span>${s.l}</span>`).join('')}</div>`;
+}
+
+/* ---------- contratos ---------- */
+let contratosEntries = []; // {id, type, code, n, label, fornecedor, firstSeen(ISO), status, doneDate(ISO)}
+let contratosStatusFilter = 'todos';
+
+function parseContratosWorkbook(workbook, out){
+  workbook.SheetNames.forEach(sn=>{
+    const ws = workbook.Sheets[sn];
+    const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+
+    // encontra header: linha que tem "cod" e "contrato"
+    let hIdx = -1;
+    for(let i=0;i<rows.length;i++){
+      const cells = (rows[i]||[]).map(c=>norm(String(c||'')));
+      if(cells.some(c=>c.includes('cod') && c.includes('contrato'))){ hIdx=i; break; }
+    }
+    if(hIdx===-1) return;
+
+    const header = rows[hIdx];
+
+    // Usa COD. CONTRATO (código completo tipo OS_INT2_0075_2026)
+    // Evita COD. CONTRATO UAU e COD. FORN UAU que têm valores inconsistentes
+    let cCode = -1;
+    for(let i=0;i<header.length;i++){
+      const c = norm(String(header[i]||''));
+      if(c.includes('cod') && c.includes('contrato') && !c.includes('uau') && !c.includes('forn')){
+        cCode=i; break;
+      }
+    }
+    if(cCode===-1) return;
+
+    const cFantasia   = colIndex(header,['nome','fantasia']);
+    const cContratado = colIndex(header,['contratado']);
+
+    // match exato para aditivos — evita 'ADITIVO 5' bater em 'ADITIVO 15'
+    const aditivoIdx = [];
+    for(let n=1;n<=13;n++){
+      for(let i=0;i<header.length;i++){
+        const c = norm(String(header[i]||''));
+        // match exato: deve ser exatamente "aditivo N" (sem outros números após)
+        if(c === 'aditivo '+n || c === 'aditivo 0'+n){
+          aditivoIdx.push({n, idx:i}); break;
+        }
+      }
+    }
+
+    for(let i=hIdx+1;i<rows.length;i++){
+      const r = rows[i];
+      if(!r) continue;
+      const rawCode = r[cCode];
+      if(!isFilled(rawCode)) continue;
+      const code = String(rawCode).trim();
+      // código válido: deve ter letra E underscore (ex: OS_INT2_0075_2026) — descarta número puro, PENDENTE sem _, lixo
+      if(!/[A-Za-z]/.test(code) || !code.includes('_')) continue;
+      if(out.seenCodes.has(code)) continue;
+      out.seenCodes.add(code);
+      const fornecedor = (cFantasia>-1 && isFilled(r[cFantasia]))
+        ? r[cFantasia]
+        : (cContratado>-1 && isFilled(r[cContratado]) ? r[cContratado] : '');
+      out.contracts.push({code, fornecedor, aditivos: aditivoIdx.map(a=>({n:a.n, value:r[a.idx]}))});
+    }
+  });
+}
+
+function reconcileContratos(parsedContracts){
+  const nowISO = new Date().toISOString();
+  const existingIds = new Set(contratosEntries.map(e=>e.id));
+
+  parsedContracts.forEach(c=>{
+    const novoId = 'novo__'+c.code;
+    if(!existingIds.has(novoId)){
+      contratosEntries.push({id:novoId, type:'novo', code:c.code, n:null, label:`${c.code} — ${c.fornecedor}`, fornecedor:c.fornecedor, firstSeen:nowISO, status:'pendente', doneDate:null});
+      existingIds.add(novoId);
+    }
+    c.aditivos.forEach(a=>{
+      if(isFilled(a.value)){
+        const adId = `tac${a.n}__${c.code}`;
+        if(!existingIds.has(adId)){
+          contratosEntries.push({id:adId, type:'aditivo', code:c.code, n:a.n, label:`TAC ${String(a.n).padStart(2,'0')} - ${c.code} - ${c.fornecedor}`, fornecedor:c.fornecedor, firstSeen:nowISO, status:'pendente', doneDate:null});
+          existingIds.add(adId);
+        }
+      }
+    });
+  });
+}
+
+function renderContratos(filterText=''){
+  const tbody = document.querySelector('#tabela-contratos tbody');
+  tbody.innerHTML='';
+  document.getElementById('contratos-empty').style.display = contratosEntries.length? 'none':'block';
+  const now = new Date();
+
+  // archive done items older than 7 days from view (kept in storage, just hidden)
+  let visible = contratosEntries.filter(e=> !(e.status==='feito' && e.doneDate && daysBetween(new Date(e.doneDate), now) > 7));
+
+  // apply status filter
+  if(contratosStatusFilter === 'pendente'){
+    visible = visible.filter(e=> e.status !== 'feito');
+  } else if(contratosStatusFilter === 'feito'){
+    visible = visible.filter(e=> e.status === 'feito');
+  }
+
+  // apply search filter
+  if(filterText.trim()){
+    const q = norm(filterText);
+    visible = visible.filter(e=>
+      norm(e.label).includes(q) ||
+      norm(e.code).includes(q) ||
+      norm(e.fornecedor).includes(q)
+    );
+  }
+
+  visible.sort((a,b)=> new Date(b.firstSeen)-new Date(a.firstSeen));
+
+  visible.forEach(e=>{
+    const tr = document.createElement('tr');
+    let rowClass='';
+    if(e.status==='feito') rowClass='row-green';
+    else if(daysBetween(new Date(e.firstSeen), now) > 7) rowClass='row-red';
+    tr.className = rowClass;
+    const detectado = new Date(e.firstSeen).toLocaleDateString('pt-BR');
+    const isFeito = e.status==='feito';
+    const btn = `<button class="btn" data-id="${e.id}" data-toggle="true">${isFeito? '✕ Desmarcar' : '✓ Marcar cadastrado'}</button>`;
+    tr.innerHTML = `<td>${e.label}</td><td><span class="pill ${e.type}">${e.type==='novo'?'Novo contrato':'Aditivo'}</span></td><td>${e.code}</td><td>${e.fornecedor||''}</td><td>${detectado}</td><td>${btn}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('button[data-toggle]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const id = b.getAttribute('data-id');
+      const entry = contratosEntries.find(e=>e.id===id);
+      if(entry.status==='feito'){
+        // desmarcar
+        entry.status='pendente';
+        entry.doneDate=null;
+      } else {
+        // marcar
+        entry.status='feito';
+        entry.doneDate = new Date().toISOString();
+      }
+      saveContratos();
+      renderContratos(filterText);
+    });
+  });
+}
+
+/* ---------- storage (localStorage — funciona ao abrir o .html direto no navegador) ---------- */
+function saveMedicoes(){
+  try{
+    const payload = { rows: medicoesRows, updatedAt: new Date().toISOString() };
+    localStorage.setItem('integra-medicoes-data', JSON.stringify(payload));
+  }catch(e){ console.error('Erro ao salvar medições:', e); }
+}
+function loadMedicoes(){
+  try{
+    const raw = localStorage.getItem('integra-medicoes-data');
+    if(raw){
+      const payload = JSON.parse(raw);
+      medicoesRows = (payload.rows||[]).map(r=>({...r}));
+      document.getElementById('upd-medicoes').textContent = new Date(payload.updatedAt).toLocaleString('pt-BR');
+      document.getElementById('meta-medicoes').textContent = `${medicoesRows.length} medições carregadas.`;
+      renderMedicoes();
+    }
+  }catch(e){ console.error('Erro ao carregar medições:', e); }
+}
+function saveContratos(){
+  try{
+    const payload = { entries: contratosEntries, updatedAt: new Date().toISOString() };
+    localStorage.setItem('integra-contratos-history', JSON.stringify(payload));
+  }catch(e){ console.error('Erro ao salvar contratos:', e); }
+}
+function loadContratos(){
+  try{
+    const raw = localStorage.getItem('integra-contratos-history');
+    if(raw){
+      const payload = JSON.parse(raw);
+      contratosEntries = payload.entries||[];
+      document.getElementById('upd-contratos').textContent = new Date(payload.updatedAt).toLocaleString('pt-BR');
+      document.getElementById('meta-contratos').textContent = `${contratosEntries.length} itens no histórico.`;
+      renderContratos();
+    }
+  }catch(e){ console.error('Erro ao carregar contratos:', e); }
+}
+
+/* ---------- file handling ---------- */
+function readWorkbook(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      try{
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true});
+        resolve(wb);
+      }catch(err){ reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+document.getElementById('drop-medicoes').addEventListener('click', ()=>document.getElementById('file-medicoes').click());
+document.getElementById('file-medicoes').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  try{
+    const wb = await readWorkbook(file);
+    medicoesRows = parseMedicoes(wb);
+    document.getElementById('upd-medicoes').textContent = nowStamp();
+    document.getElementById('meta-medicoes').textContent = `${medicoesRows.length} medições carregadas de "${file.name}".`;
+    pizzaFilterPhase=null;
+    renderMedicoes();
+    saveMedicoes();
+  }catch(err){
+    alert('Não consegui ler essa planilha como esperado: '+err.message);
+  }
+});
+
+document.getElementById('drop-contratos').addEventListener('click', ()=>document.getElementById('file-contratos').click());
+document.getElementById('file-contratos').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files);
+  if(!files.length) return;
+  try{
+    const out = {seenCodes:new Set(), contracts:[]};
+    for(const f of files){
+      const wb = await readWorkbook(f);
+      parseContratosWorkbook(wb, out);
+    }
+    reconcileContratos(out.contracts);
+    document.getElementById('upd-contratos').textContent = nowStamp();
+    document.getElementById('meta-contratos').textContent = `${out.contracts.length} contratos lidos de ${files.length} arquivo(s).`;
+    renderContratos();
+    saveContratos();
+  }catch(err){
+    alert('Não consegui ler essas planilhas como esperado: '+err.message);
+  }
+});
+
+['drop-medicoes','drop-contratos'].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('dragover', e=>{e.preventDefault(); el.classList.add('drag');});
+  el.addEventListener('dragleave', ()=>el.classList.remove('drag'));
+  el.addEventListener('drop', e=>{
+    e.preventDefault(); el.classList.remove('drag');
+    const input = document.getElementById(id==='drop-medicoes'?'file-medicoes':'file-contratos');
+    input.files = e.dataTransfer.files;
+    input.dispatchEvent(new Event('change'));
+  });
+});
+
+document.getElementById('btn-limpar-filtros').addEventListener('click', ()=>{
+  currentSegment = 'todos';
+  document.querySelectorAll('#seg-periodo button').forEach(b=>b.classList.remove('active'));
+  document.querySelector('#seg-periodo button[data-v="todos"]').classList.add('active');
+  respFilter = 'todos';
+  document.querySelectorAll('#seg-resp button').forEach(b=>b.classList.remove('active'));
+  document.querySelector('#seg-resp button[data-r="todos"]').classList.add('active');
+  pizzaFilterPhase = null;
+  document.getElementById('select-fornecedor').value = '';
+  document.getElementById('fornecedor-ruler').innerHTML = '';
+  renderMedicoes();
+});
+
+document.querySelectorAll('#seg-resp button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#seg-resp button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    respFilter = btn.dataset.r;
+    pizzaFilterPhase = null;
+    document.getElementById('select-fornecedor').value = '';
+    document.getElementById('fornecedor-ruler').innerHTML = '';
+    renderMedicoes();
+  });
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('#seg-periodo button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#seg-periodo button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSegment = btn.dataset.v;
+    pizzaFilterPhase=null;
+    renderMedicoes();
+  });
+});
+
+document.getElementById('select-fornecedor').addEventListener('change', (e)=>{
+  renderFornecedorRuler(e.target.value);
+});
+
+document.getElementById('busca-contratos').addEventListener('input', (e)=>{
+  renderContratos(e.target.value);
+});
+
+document.querySelectorAll('#seg-contratos button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#seg-contratos button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    contratosStatusFilter = btn.dataset.s;
+    renderContratos(document.getElementById('busca-contratos').value);
+  });
+});
+
+/* ---------- cauções state ---------- */
+let caucoesRows = [];
+let caucoesFiltro = 'todos';
+let encerramentoFiltro = 'todos';
+let caucoesPizzaChart = null;
+let caucoesLinhaChart = null;
+
+/* ---------- helpers ---------- */
+function fmtBRL(v){
+  if(v===null||v===undefined||v==='') return '—';
+  const n = parseFloat(v);
+  if(isNaN(n)) return '—';
+  return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function parseDate(v){
+  if(!v) return null;
+  const s = String(v).trim();
+  if(!s || s==='None' || s==='N/A' || s==='#VALUE!' || s==='PENDENTE') return null;
+  // número serial Excel
+  if(/^\d+(\.\d+)?$/.test(s)){
+    const n = parseFloat(s);
+    if(n < 2000) return null; // data nula tipo 1901-12-20
+    const d = new Date(Math.round((n - 25569)*86400*1000));
+    return isNaN(d) ? null : d;
+  }
+  // string de data
+  const d = new Date(s);
+  if(isNaN(d)) return null;
+  if(d.getFullYear() < 1950) return null; // data nula Excel
+  return d;
+}
+function fmtDateBR(d){
+  if(!d) return '—';
+  return d.toLocaleDateString('pt-BR');
+}
+
+/* ---------- XLSX parsing: cauções ---------- */
+function parseCaucoes(workbook){
+  const sheetName = workbook.SheetNames.find(n=>norm(n).includes('lote1')) || workbook.SheetNames[0];
+  const ws = workbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, cellDates:true, defval:null});
+
+  // header na linha com COD. CONTRATO e SITUAÇÃO
+  let hIdx = -1;
+  for(let i=0;i<rows.length;i++){
+    const cells = (rows[i]||[]).map(c=>norm(String(c||'')));
+    if(cells.some(c=>c.includes('cod') && c.includes('contrato')) && cells.some(c=>c.includes('situa'))){
+      hIdx=i; break;
+    }
+  }
+  if(hIdx===-1) throw new Error('Cabeçalho não encontrado. Verifique se o arquivo é a planilha de Contratos Lote 1.');
+  const header = rows[hIdx];
+
+  function col(keywords){
+    for(let i=0;i<header.length;i++){
+      const c=norm(String(header[i]||''));
+      if(keywords.every(k=>c.includes(k))) return i;
+    }
+    return -1;
+  }
+
+  const c = {
+    cod:       col(['cod','contrato']),
+    contratado:col(['contratado']),
+    situacao:  col(['situa']),
+    termino:   col(['termino']),
+    valorTotal:col(['valor','total']),
+    valorRetido:   col(['valor','retido']),
+    valorDevolvido:col(['valor','devolvido']),
+    saldoCaucao:   col(['saldo','caucao']),
+    dtEncerramento:col(['data','encerramento']),
+    dtRealizada:   col(['data','realizada','caucao']),
+    dtProgramada:  col(['data','programada','caucao']),
+    statusCaucao:  col(['status','caucao']),
+  };
+
+  const data = [];
+  for(let i=hIdx+1;i<rows.length;i++){
+    const r = rows[i];
+    if(!r || !isFilled(r[c.cod])) continue;
+    const codVal = String(r[c.cod]||'').trim();
+    if(!/[A-Z0-9_]{3,}/i.test(codVal)) continue;
+
+    // Data de caução: dt_programada, ou status_caucao se dt_programada for #VALUE!
+    let dtProg = parseDate(r[c.dtProgramada]);
+    const dtReal = parseDate(r[c.dtRealizada]);
+    // fallback: status_caucao pode ter a data quando dt_programada é #VALUE!
+    if(!dtProg && c.statusCaucao>-1){
+      const sc = r[c.statusCaucao];
+      if(sc instanceof Date) dtProg = sc;
+      else dtProg = parseDate(sc);
+    }
+
+    const termino = parseDate(r[c.termino]);
+    const dtEncerr = parseDate(r[c.dtEncerramento]);
+    const situacao = String(r[c.situacao]||'').trim().toUpperCase();
+
+    // só inclui na tabela de cauções se tem data de caução
+    const temCaucao = !!(dtProg || dtReal);
+
+    data.push({
+      cod:           codVal,
+      contratado:    String(r[c.contratado]||'').trim(),
+      situacao,
+      termino,
+      dtEncerramento:dtEncerr,
+      valorTotal:    parseFloat(r[c.valorTotal])||0,
+      valorRetido:   parseFloat(r[c.valorRetido])||0,
+      valorDevolvido:parseFloat(r[c.valorDevolvido])||0,
+      saldoCaucao:   parseFloat(r[c.saldoCaucao])||0,
+      dtRealizada:   dtReal,
+      dtProgramada:  dtProg,
+      temCaucao,
+    });
+  }
+  return data;
+}
+
+/* ---------- render cauções ---------- */
+function renderCaucoes(){
+  const content = document.getElementById('caucoes-content');
+  const empty   = document.getElementById('caucoes-empty');
+  content.style.display = caucoesRows.length ? 'block':'none';
+  empty.style.display   = caucoesRows.length ? 'none':'block';
+  if(!caucoesRows.length) return;
+
+  // BARRA DE AVANÇO
+  const totalRetido    = caucoesRows.reduce((s,r)=>s+r.valorRetido,0);
+  const totalDevolvido = caucoesRows.reduce((s,r)=>s+r.valorDevolvido,0);
+  const pctBar = totalRetido>0 ? Math.min(100,Math.round(100*totalDevolvido/totalRetido)) : 0;
+  document.getElementById('cau-bar-fill').style.width = pctBar+'%';
+  document.getElementById('cau-bar-pct').textContent  = pctBar+'%';
+  document.getElementById('cau-bar-label-real').textContent  = 'Realizado: '+fmtBRL(totalDevolvido);
+  document.getElementById('cau-bar-label-total').textContent = 'Total Retido: '+fmtBRL(totalRetido);
+  document.getElementById('cau-bar-foot').textContent = `Saldo pendente: ${fmtBRL(totalRetido-totalDevolvido)}`;
+
+  // PIZZA: situações
+  const sitCounts = {};
+  caucoesRows.forEach(r=>{ sitCounts[r.situacao]=(sitCounts[r.situacao]||0)+1; });
+  const sitLabels = Object.keys(sitCounts);
+  const sitColors = ['#27AE60','#2F80ED','#F2994A','#C24A3B'];
+  const ctxPizza = document.getElementById('chart-caucoes-pizza').getContext('2d');
+  if(caucoesPizzaChart) caucoesPizzaChart.destroy();
+  caucoesPizzaChart = new Chart(ctxPizza,{
+    type:'doughnut',
+    data:{
+      labels:sitLabels,
+      datasets:[{data:sitLabels.map(s=>sitCounts[s]),backgroundColor:sitColors,borderColor:'#fff',borderWidth:2}]
+    },
+    options:{
+      plugins:{
+        legend:{position:'bottom',labels:{font:{family:"'Inter',sans-serif",size:10.5},boxWidth:10}},
+        tooltip:{callbacks:{footer:()=>`Total: ${caucoesRows.length} contratos`}}
+      }
+    }
+  });
+
+  // LINHA: valor retido por data de caução
+  const linhaRows = caucoesRows
+    .filter(r=>r.temCaucao && r.valorRetido>0)
+    .map(r=>({
+      dt: r.dtRealizada || r.dtProgramada,
+      valorRetido:    r.valorRetido,
+      valorDevolvido: r.valorDevolvido,
+      saldo:          r.saldoCaucao,
+      cod:            r.cod,
+    }))
+    .filter(r=>r.dt)
+    .sort((a,b)=>a.dt-b.dt);
+
+  const ctxLinha = document.getElementById('chart-caucoes-linha').getContext('2d');
+  if(caucoesLinhaChart) caucoesLinhaChart.destroy();
+  caucoesLinhaChart = new Chart(ctxLinha,{
+    type:'line',
+    data:{
+      labels: linhaRows.map(r=>r.dt.toLocaleDateString('pt-BR')),
+      datasets:[{
+        label:'Valor Retido',
+        data: linhaRows.map(r=>r.valorRetido),
+        borderColor:'#2F80ED',
+        backgroundColor:'rgba(47,128,237,0.08)',
+        pointBackgroundColor:'#2F80ED',
+        tension:.3,fill:true,
+      }]
+    },
+    options:{
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label: (ctx)=>{
+              const d = linhaRows[ctx.dataIndex];
+              return [
+                `Retido: ${fmtBRL(d.valorRetido)}`,
+                `Devolvido: ${fmtBRL(d.valorDevolvido)}`,
+                `Saldo: ${fmtBRL(d.saldo)}`,
+              ];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{font:{size:9},maxRotation:45}},
+        y:{ticks:{callback:v=>fmtBRL(v)}}
+      }
+    }
+  });
+
+  // TABELA CAUÇÕES
+  renderTabelaCaucoes();
+
+  // TABELA ENCERRAMENTO
+  renderTabelaEncerramento();
+}
+
+function renderTabelaCaucoes(){
+  const now = new Date();
+  const busca = norm(document.getElementById('busca-caucoes').value||'');
+  const tbody = document.querySelector('#tabela-caucoes tbody');
+  tbody.innerHTML='';
+
+  let rows = caucoesRows.filter(r=>r.temCaucao);
+
+  // filtro status
+  if(caucoesFiltro==='pagas')    rows = rows.filter(r=>r.dtRealizada);
+  if(caucoesFiltro==='apagar')   rows = rows.filter(r=>!r.dtRealizada && r.dtProgramada && r.dtProgramada>=now);
+  if(caucoesFiltro==='atrasadas')rows = rows.filter(r=>!r.dtRealizada && r.dtProgramada && r.dtProgramada<now);
+
+  // busca
+  if(busca) rows = rows.filter(r=>norm(r.cod).includes(busca)||norm(r.contratado).includes(busca));
+
+  // ordenação: mais antiga primeiro; pagas usam dtRealizada
+  rows.sort((a,b)=>{
+    const da = a.dtRealizada||a.dtProgramada||new Date(9999,0);
+    const db = b.dtRealizada||b.dtProgramada||new Date(9999,0);
+    return da-db;
+  });
+
+  rows.forEach(r=>{
+    const isPaga     = !!r.dtRealizada;
+    const isAtrasada = !r.dtRealizada && r.dtProgramada && r.dtProgramada < now;
+    const tr = document.createElement('tr');
+    if(isPaga)     tr.className='row-green';
+    else if(isAtrasada) tr.className='row-red';
+    const dtMostra = isPaga ? fmtDateBR(r.dtRealizada) : fmtDateBR(r.dtProgramada);
+    tr.innerHTML=`<td>${dtMostra}</td><td>${r.contratado}</td><td>${r.cod}</td><td>${fmtBRL(r.valorRetido)}</td><td>${fmtBRL(r.valorDevolvido)}</td><td>${fmtBRL(r.saldoCaucao)}</td>`;
+    tbody.appendChild(tr);
+  });
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:20px;">Nenhuma caução nesse filtro.</td></tr>';
+  }
+}
+
+function renderTabelaEncerramento(){
+  const now = new Date();
+  const tbody = document.querySelector('#tabela-encerramento tbody');
+  tbody.innerHTML='';
+
+  let rows = caucoesRows.filter(r=>r.termino);
+
+  // aplica filtro
+  rows = rows.filter(r=>{
+    const encerrado = r.situacao==='ENCERRADO' || !!r.dtEncerramento;
+    const vencido   = !encerrado && r.termino < now;
+    if(encerramentoFiltro==='encerrado') return encerrado;
+    if(encerramentoFiltro==='vencido')   return vencido;
+    if(encerramentoFiltro==='andamento') return !encerrado && !vencido;
+    return true;
+  });
+
+  rows.sort((a,b)=>a.termino-b.termino);
+
+  rows.forEach(r=>{
+    const encerrado = r.situacao==='ENCERRADO' || !!r.dtEncerramento;
+    const vencido   = !encerrado && r.termino < now;
+    const tr = document.createElement('tr');
+    if(encerrado)    tr.className='row-green';
+    else if(vencido) tr.className='row-red';
+    tr.innerHTML=`<td>${fmtDateBR(r.termino)}</td><td>${r.cod}</td><td>${r.contratado}</td><td>${r.situacao}</td><td>${fmtDateBR(r.dtEncerramento)}</td>`;
+    tbody.appendChild(tr);
+  });
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:20px;">Nenhum contrato nesse filtro.</td></tr>';
+  }
+}
+
+/* ---------- storage cauções ---------- */
+function saveCaucoes(){
+  try{
+    const payload={rows:caucoesRows.map(r=>({
+      ...r,
+      termino:        r.termino?        r.termino.toISOString()        : null,
+      dtEncerramento: r.dtEncerramento? r.dtEncerramento.toISOString() : null,
+      dtRealizada:    r.dtRealizada?    r.dtRealizada.toISOString()    : null,
+      dtProgramada:   r.dtProgramada?   r.dtProgramada.toISOString()   : null,
+    })), updatedAt:new Date().toISOString()};
+    localStorage.setItem('integra-caucoes-data', JSON.stringify(payload));
+  }catch(e){console.error(e);}
+}
+function loadCaucoes(){
+  try{
+    const raw = localStorage.getItem('integra-caucoes-data');
+    if(raw){
+      const payload = JSON.parse(raw);
+      caucoesRows = (payload.rows||[]).map(r=>({
+        ...r,
+        termino:        r.termino?        new Date(r.termino)        : null,
+        dtEncerramento: r.dtEncerramento? new Date(r.dtEncerramento) : null,
+        dtRealizada:    r.dtRealizada?    new Date(r.dtRealizada)    : null,
+        dtProgramada:   r.dtProgramada?   new Date(r.dtProgramada)   : null,
+      }));
+      document.getElementById('upd-contratos').textContent = new Date(payload.updatedAt).toLocaleString('pt-BR');
+      document.getElementById('meta-caucoes').textContent = `${caucoesRows.length} contratos carregados.`;
+      renderCaucoes();
+    }
+  }catch(e){}
+}
+
+/* ---------- file handler cauções ---------- */
+document.getElementById('drop-caucoes').addEventListener('click',()=>document.getElementById('file-caucoes').click());
+document.getElementById('file-caucoes').addEventListener('change', async(e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  try{
+    const wb = await readWorkbook(file);
+    caucoesRows = parseCaucoes(wb);
+    document.getElementById('upd-contratos').textContent = nowStamp();
+    document.getElementById('meta-caucoes').textContent = `${caucoesRows.length} contratos carregados de "${file.name}".`;
+    renderCaucoes();
+    saveCaucoes();
+  }catch(err){ alert('Erro ao ler planilha: '+err.message); }
+});
+
+// drag-and-drop cauções
+document.getElementById('drop-caucoes').addEventListener('dragover',e=>{e.preventDefault();document.getElementById('drop-caucoes').classList.add('drag');});
+document.getElementById('drop-caucoes').addEventListener('dragleave',()=>document.getElementById('drop-caucoes').classList.remove('drag'));
+document.getElementById('drop-caucoes').addEventListener('drop',e=>{
+  e.preventDefault();document.getElementById('drop-caucoes').classList.remove('drag');
+  document.getElementById('file-caucoes').files=e.dataTransfer.files;
+  document.getElementById('file-caucoes').dispatchEvent(new Event('change'));
+});
+
+// filtros cauções
+document.querySelectorAll('#seg-caucoes button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('#seg-caucoes button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    caucoesFiltro = btn.dataset.c;
+    renderTabelaCaucoes();
+  });
+});
+document.getElementById('busca-caucoes').addEventListener('input',()=>renderTabelaCaucoes());
+
+document.querySelectorAll('#seg-encerramento button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('#seg-encerramento button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    encerramentoFiltro = btn.dataset.e;
+    renderTabelaEncerramento();
+  });
+});
+
+/* ---------- init ---------- */
+loadMedicoes();
+loadContratos();
+loadCaucoes();
+
+</script>
+
+
+</body></html>
